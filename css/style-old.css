@@ -1,0 +1,177 @@
+* {
+  color: #333;
+}
+
+body {
+  background: rgb(178, 223, 245);
+}
+
+#game-container {
+  background: #fff;
+  border: 4px solid rgba(0, 0, 0, .2);
+  border-radius: 6px;
+  height: 530px;
+  margin: 30px auto;
+  position: relative;
+  width: 640px;
+}
+
+#menu {
+  position: relative;
+  top: 35%;
+}
+
+.btn {
+  z-index: 100;
+}
+
+.menuBtn {
+  display: block;
+  margin: 20px auto;
+  
+}
+
+.level {
+  position: absolute;
+  right: 20px;
+  top: 0px;
+}
+
+.instructions {
+  position: absolute;
+  text-align: center;
+  top: 70px;
+  width: 100%;
+}
+
+/* Linear game */
+
+#linearGame {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+#countoff {
+  position: absolute;
+  text-align: center;
+  top: 150px;
+  width: 100%;
+}
+
+#timeline {
+  background: #999;
+/*   border: 3px solid #ccc; */
+  border-radius: 6px;
+  height: 6px;
+  left: 170px;
+/*   margin-top: -3px; */
+  position: absolute;
+  top: 270px;
+  width: 300px;
+}
+
+#lMarker {
+  background: #333;
+  border-radius: 5px;
+/*   box-shadow: 0 0 0 4px #EF3F46; */
+  height: 60px;
+  left: 170px;
+  margin-left: -5px;
+  position: absolute;
+  top: 244px;
+  width: 10px;
+  z-index: 100;
+}
+
+.lHitIndicator {
+  background: #49ACE1;/*#49ACE1;*/
+  border-radius: 50%;
+  box-shadow: 0 0 6px 0 #49ACE1;
+  height: 24px;
+  position: absolute;
+  top: 261px;
+  width: 24px;
+}
+
+.lMissIndicator {
+  background: #DE2B34;
+  border-radius: 50%;
+  height: 16px;
+  position: absolute;
+  top: 265px;
+  width: 16px;
+}
+
+#spacebar {
+  background: #fff;
+  border: 4px solid #888;
+  border-radius: 5px;
+  bottom: 100px;
+  color: #888;
+  font-size: 20px;
+  left: 50%;
+  margin-left: -81px;
+  padding: 5px;
+  position: absolute;
+  text-align: center;
+  width: 150px;
+}
+
+/* Circular game */
+
+#loops-left {
+  position: absolute;
+  left: 20px;
+  top: 0px;
+}
+
+#cInstructions {
+  position: relative;
+  text-align: center;
+  top: 80px;
+}
+
+#circle {
+  border: 6px solid #999;
+  border-radius: 50%;
+  height: 200px;
+  left: 50%;
+  margin: -106px 0 0 -106px;
+  position: absolute;
+  top: 250px;
+  width: 200px;
+}
+
+#cMarker {
+  background: #333;
+  border-radius: 50%;
+  height: 30px;
+  left: 50%;
+  margin-left: -15px;
+  margin-top: -15px;
+  position: absolute;
+  top: 150px;
+  width: 30px;
+  z-index: 100;
+}
+
+.cHitIndicator {
+  background: #49ACE1;
+  border-radius: 50%;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  position: absolute;
+  width: 24px;
+}
+
+.cMissIndicator {
+  background: #DE2B34;
+  border-radius: 50%;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  position: absolute;
+  width: 16px;
+}
+
