@@ -80,19 +80,22 @@ $(document).ready(function () {
   var sideLength = 300;
   var center = sideLength / 2;
   var radius = 120;
+  var markerRadius = 20;
   var elem = document.getElementById('graphics-container');
   var two = new Two({width: sideLength, height: sideLength}).appendTo(elem);
-  
-  var marker;
+  var trackGroup = two.makeGroup();
+  var markerGroup = two.makeGroup();
   var cueGroup = two.makeGroup();
+  
+  initGraphics();
   
   function initGraphics() {
     var trackOuterWidth = 6;
     var trackInnerWidth = 42;
     
-    var outerCircle = two.makeCircle(center, center, radius + trackInnerWidth / 2 + trackOuterWidth / 2);
-    var middleCircle = two.makeCircle(center, center, radius);
-    var innerCircle = two.makeCircle(center, center, radius - trackInnerWidth / 2 - trackOuterWidth / 2);
+    var outerCircle = two.makeCircle(0, 0, radius + trackInnerWidth / 2 + trackOuterWidth / 2);
+    var middleCircle = two.makeCircle(0, 0, radius);
+    var innerCircle = two.makeCircle(0, 0, radius - trackInnerWidth / 2 - trackOuterWidth / 2);
     
     var trackOuterColor = 'rgba(154, 104, 47, .6)';
     var trackInnerColor = 'rgba(154, 104, 47, .4)';
@@ -109,6 +112,56 @@ $(document).ready(function () {
     middleCircle.noFill();
     innerCircle.noFill();
     
+    trackGroup.add(outerCircle, middleCircle, innerCircle);
+    trackGroup.translation.x = center;
+    trackGroup.translation.y = center;
+    
+    cueGroup.translation.x = center;
+    cueGroup.translation.y = center;
+    
+    var markerCont = two.makeRectangle(0, 0, sideLength, sideLength);
+    markerCont.noFill();
+    markerCont.noStroke();
+    var marker = two.makeCircle(0, 0 - radius, markerRadius);
+    marker.fill = '#333';
+    marker.noStroke();
+    
+    markerGroup.add(marker, markerCont);
+/*     markerGroup.center(center, center); */
+    markerGroup.translation.x = center;
+    markerGroup.translation.y = center;
+    
+    two.update();
+    
+    two.bind('update', function(frameCount) {
+      markerGroup.rotation += .02;
+    });
+  }
+  
+  function drawCues(rhy) {
+    for(var beat in rhy.cues) {
+/*
+      var xPos = rhy.cues[beat][0];
+      var yPos = rhy.cues[beat][1];
+*/ 
+      var angle = rhy.cues[beat];
+      
+/*       var cueID = '#cue-' + beat; */
+/*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
+      console.log(angle);
+      var cue = two.makeCircle(- radius * Math.cos(angle),radius * Math.sin(angle), markerRadius);
+      cue.fill = '#fff';
+      cue.noStroke();
+      cueGroup.add(cue);
+    }
+/*
+    if(level >= LEVEL_FADE_CUES && level < LEVEL_NO_CUES) {
+      $('.cue').fadeOut(4000);
+    }
+    else if(level >= LEVEL_NO_CUES) {
+      $('.cue').remove();
+    }
+*/
     two.update();
   }
 
@@ -128,10 +181,12 @@ $(document).ready(function () {
   }
   
   function runGame(startingLevel, numLoops, numTrials) {
-    $('#menu').hide();
+    $('#menu, #countoff, #dialog, #multiplier').hide();
+/*
     $('#countoff').hide();
     $('#dialog').hide();
     $('#multiplier').hide();
+*/
     $('#game').show();
     
     $('#num-trials').html(numTrials);
@@ -166,6 +221,7 @@ $(document).ready(function () {
     setTimeout( function() {
       rhy.listen();
       setTimeout( function() {
+        two.play();
         rhy.play(numLoops);
         $('#spacebar').show();
         for(var i = 0; i < numLoops; i++) {
@@ -413,34 +469,6 @@ $(document).ready(function () {
   
   function loopMarker(rhy) {
     $('#marker').animate({path : new $.path.arc(arc_param1)}, rhy.duration / 2, 'linear').animate({path : new $.path.arc(arc_param2)}, rhy.duration / 2, 'linear');
-  }
-  
-  function drawCues(rhy) {
-    for(var beat in rhy.cues) {
-/*
-      var xPos = rhy.cues[beat][0];
-      var yPos = rhy.cues[beat][1];
-*/ 
-      var angle = rhy.cues[beat];
-      
-/*       var cueID = '#cue-' + beat; */
-/*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
-      
-      var cueRadius = 20;
-/*       var cue = two.makeCircle(center - radius * Math.cos(angle), center + radius * Math.sin(angle), cueRadius); */
-/*       cue.fill = '#333'; */
-/*       cue.noStroke(); */
-      
-    }
-/*
-    if(level >= LEVEL_FADE_CUES && level < LEVEL_NO_CUES) {
-      $('.cue').fadeOut(4000);
-    }
-    else if(level >= LEVEL_NO_CUES) {
-      $('.cue').remove();
-    }
-*/
-/*     two.update(); */
   }
   
   function drawProgressMarkers(numLoops) {
