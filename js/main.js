@@ -24,7 +24,7 @@ var MIN_TEMPO = 110;
 var MAX_TEMPO = 130;
 
 var MAX_LEVEL = 10;
-var NUM_LOOPS = 8;
+var LOOPS_PER_TRIAL = 8;
 var NUM_TRIALS = 8; 
 
 var COMBO_LOOPS = 2;
@@ -84,15 +84,16 @@ $(document).ready(function () {
   var elem = document.getElementById('graphics-container');
   var two = new Two({width: sideLength, height: sideLength}).appendTo(elem);
   var trackGroup = two.makeGroup();
-  var markerGroup = two.makeGroup();
   var cueGroup = two.makeGroup();
+  var markerGroup = two.makeGroup();
+  
+  
+  var trackOuterWidth = 6;
+  var trackInnerWidth = 42;
   
   initGraphics();
   
   function initGraphics() {
-    var trackOuterWidth = 6;
-    var trackInnerWidth = 42;
-    
     var outerCircle = two.makeCircle(0, 0, radius + trackInnerWidth / 2 + trackOuterWidth / 2);
     var middleCircle = two.makeCircle(0, 0, radius);
     var innerCircle = two.makeCircle(0, 0, radius - trackInnerWidth / 2 - trackOuterWidth / 2);
@@ -122,51 +123,27 @@ $(document).ready(function () {
     var markerCont = two.makeRectangle(0, 0, sideLength, sideLength);
     markerCont.noFill();
     markerCont.noStroke();
-    var marker = two.makeCircle(0, 0 - radius, markerRadius);
-    marker.fill = '#333';
-    marker.noStroke();
+    var marker = two.makeRectangle(-8, -55, 8, 55);//makeCircle(0, 0 - radius, markerRadius);
+    marker.translation.set(0, -radius);
+    marker.fill = 'red';
+    marker.stroke = '#999';
+    marker.lineWidth = 12;
+/*     marker.noFill(); */
     
     markerGroup.add(marker, markerCont);
-/*     markerGroup.center(center, center); */
+  /*     markerGroup.center(center, center); */
     markerGroup.translation.x = center;
     markerGroup.translation.y = center;
-    
+    console.log(cueGroup);
     two.update();
-    
-    two.bind('update', function(frameCount) {
-      markerGroup.rotation += .02;
-    });
   }
   
-  function drawCues(rhy) {
-    for(var beat in rhy.cues) {
-/*
-      var xPos = rhy.cues[beat][0];
-      var yPos = rhy.cues[beat][1];
-*/ 
-      var angle = rhy.cues[beat];
-      
-/*       var cueID = '#cue-' + beat; */
-/*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
-      console.log(angle);
-      var cue = two.makeCircle(- radius * Math.cos(angle),radius * Math.sin(angle), markerRadius);
-      cue.fill = '#fff';
-      cue.noStroke();
-      cueGroup.add(cue);
-    }
-/*
-    if(level >= LEVEL_FADE_CUES && level < LEVEL_NO_CUES) {
-      $('.cue').fadeOut(4000);
-    }
-    else if(level >= LEVEL_NO_CUES) {
-      $('.cue').remove();
-    }
-*/
-    two.update();
-  }
+  
+
 
   $('#start-game').click( function() {
-    runGame(STARTING_LEVEL, NUM_LOOPS, NUM_TRIALS);
+    runGame(STARTING_LEVEL, LOOPS_PER_TRIAL, NUM_TRIALS);
+    
   });
   
   function loadInstruments() {
@@ -197,6 +174,7 @@ $(document).ready(function () {
   
     setTimeout( function() {
       runTrial(numLoops, numTrials);
+      
     }, 100);
   }
   
@@ -205,19 +183,30 @@ $(document).ready(function () {
     if(trial >= numTrials) {
       return;
     }
+    
     $('#trial').html(trial);
     $('#level').html(level);
     $('#circle-outer, #circle-middle, #circle-inner').removeClass('combo');
     $('#multiplier').fadeOut('scale');
     $('#spacebar').hide();
-    var rhy = new Rhythm(TESTING);
+    
     clearTrial();
+    var rhy = new Rhythm(TESTING);
     drawCues(rhy);
     drawProgressMarkers(numLoops);
+    
+    resetMarker();
+    
+    // Sets rotation of the markerGroup to the equivalent percentage of the rhythm the current timestamp is on.
+    two.bind('update', function(frameCount) {
+/*       var offset = .7; */
+      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;// 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
+    });
+    
     if(level > 6) {
       $('.cue').hide();
     }
-  /*   countoff(rhy); */
+/*     countoff(rhy); */
     setTimeout( function() {
       rhy.listen();
       setTimeout( function() {
@@ -244,6 +233,8 @@ $(document).ready(function () {
     });
     
     setTimeout( function() {
+      two.pause();
+      resetMarker();
       $('#dialog').fadeIn();
       $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
       var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
@@ -265,6 +256,38 @@ $(document).ready(function () {
         runTrial(numLoops, numTrials);
       });
     }, /* rhy.interval * 8 + */ rhy.duration * (LISTEN_LOOPS + numLoops));
+  }
+  
+  function resetMarker() {
+    markerGroup.rotation = 0;
+    two.update();
+  }
+  
+  function drawCues(rhy) {
+    for(var beat in rhy.cues) {
+/*
+      var xPos = rhy.cues[beat][0];
+      var yPos = rhy.cues[beat][1];
+*/ 
+      var angle = rhy.cues[beat];
+      
+/*       var cueID = '#cue-' + beat; */
+/*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
+      console.log(angle);
+      var cue = two.makeCircle(- radius * Math.cos(angle),radius * Math.sin(angle), markerRadius);
+      cue.fill = '#fff';
+      cue.noStroke();
+      cueGroup.add(cue);
+    }
+/*
+    if(level >= LEVEL_FADE_CUES && level < LEVEL_NO_CUES) {
+      $('.cue').fadeOut(4000);
+    }
+    else if(level >= LEVEL_NO_CUES) {
+      $('.cue').remove();
+    }
+*/
+    two.update();
   }
   
   function clearTrial() {
@@ -490,76 +513,4 @@ $(document).ready(function () {
     }, 50);
   }
   
-  function clearTrial() {
-    $('.cue').remove();
-    $('.cue-hit').remove();
-    $('.cue-miss').remove();
-    $('.progress-mark').remove();
-  }
-  
-  function runTrial(numLoops, numTrials) {
-    trial++;
-    if(trial >= numTrials) {
-      return;
-    }
-    $('#trial').html(trial);
-    $('#level').html(level);
-    $('#circle-outer, #circle-middle, #circle-inner').removeClass('combo');
-    $('#multiplier').fadeOut('scale');
-    $('#spacebar').hide();
-    var rhy = new Rhythm(TESTING);
-    clearTrial();
-    drawCues(rhy);
-    drawProgressMarkers(numLoops);
-    if(level > 6) {
-      $('.cue').hide();
-    }
-  /*   countoff(rhy); */
-    setTimeout( function() {
-      rhy.listen();
-      setTimeout( function() {
-        rhy.play(numLoops);
-        $('#spacebar').show();
-        for(var i = 0; i < numLoops; i++) {
-          setTimeout(
-            (function(num) {
-              return function() {
-                loopMarker(rhy);
-                $('#loop').html(num);
-              }
-            })(i + 1), i * rhy.duration);
-        }
-      }, rhy.duration * LISTEN_LOOPS);
-    }, 0);// 8 * rhy.interval);
-    
-    $('body').keypress( function(event) {
-      if(event.which == 32) { // if key pressed is space bar
-        event.preventDefault();
-        hit(rhy);
-      }
-    });
-    
-    setTimeout( function() {
-      $('#dialog').fadeIn();
-      $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
-      var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
-      $('#dialog-accuracy').html(accuracy + '%');
-      $('#dialog-points').html('+' + rhy.points + ' points');
-  /*     $('#dialog-accuracy').html(rhy.hits / rhy.numNotes + '%'); */
-      var nextGameStarted = false;
-      $('#nextTrial').click( function() {
-        if(nextGameStarted)
-          return;
-        nextGameStarted = true;
-        rhy.running = false;
-        $('#dialog').fadeOut();
-        if(accuracy > NEXT_LEVEL_ACC) {
-          level++;
-        } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
-          level--;
-        }
-        runTrial(numLoops, numTrials);
-      });
-    }, /* rhy.interval * 8 + */ rhy.duration * (LISTEN_LOOPS + numLoops));
-  }
 });
