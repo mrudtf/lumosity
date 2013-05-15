@@ -24,7 +24,7 @@ var MIN_TEMPO = 110;
 var MAX_TEMPO = 130;
 
 var MAX_LEVEL = 10;
-var LOOPS_PER_TRIAL = 8;
+var LOOPS_PER_TRIAL = 4;
 var NUM_TRIALS = 8; 
 
 var COMBO_LOOPS = 2;
@@ -80,7 +80,11 @@ $(document).ready(function () {
   var sideLength = 300;
   var center = sideLength / 2;
   var radius = 120;
-  var markerRadius = 20;
+  var markLargeLength = 26;
+  var markSmallLength = 24;
+  var markLargeThickness = 24;
+  var markSmallThickness = 10;
+  
   var elem = document.getElementById('graphics-container');
   var two = new Two({width: sideLength, height: sideLength}).appendTo(elem);
   var trackGroup = two.makeGroup();
@@ -88,8 +92,8 @@ $(document).ready(function () {
   var markerGroup = two.makeGroup();
   
   
-  var trackOuterWidth = 6;
-  var trackInnerWidth = 42;
+  var trackOuterWidth = 2;
+  var trackInnerWidth = 50;
   
   initGraphics();
   
@@ -98,8 +102,8 @@ $(document).ready(function () {
     var middleCircle = two.makeCircle(0, 0, radius);
     var innerCircle = two.makeCircle(0, 0, radius - trackInnerWidth / 2 - trackOuterWidth / 2);
     
-    var trackOuterColor = 'rgba(154, 104, 47, .6)';
-    var trackInnerColor = 'rgba(154, 104, 47, .4)';
+    var trackOuterColor = 'rgba(0, 0, 0, .3)';
+    var trackInnerColor = 'rgba(0, 0, 0, .2)';
     
     outerCircle.stroke = trackOuterColor;
     middleCircle.stroke = trackInnerColor;
@@ -120,22 +124,48 @@ $(document).ready(function () {
     cueGroup.translation.x = center;
     cueGroup.translation.y = center;
     
-    var markerCont = two.makeRectangle(0, 0, sideLength, sideLength);
-    markerCont.noFill();
-    markerCont.noStroke();
-    var marker = two.makeRectangle(-8, -55, 8, 55);//makeCircle(0, 0 - radius, markerRadius);
-    marker.translation.set(0, -radius);
-    marker.fill = 'red';
-    marker.stroke = '#999';
-    marker.lineWidth = 12;
-/*     marker.noFill(); */
+    var markerOuter = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
+    markerOuter.translation.set(0, -radius);
+    markerOuter.stroke = '#eee';
+    markerOuter.linewidth = markLargeThickness;
+    var markerInner = two.makeLine(0, -markSmallLength / 2, 0, markSmallLength / 2);
+    markerInner.translation.set(0, -radius);
+    markerInner.stroke = '#fff';
+    markerInner.linewidth = markSmallThickness;
     
-    markerGroup.add(marker, markerCont);
-  /*     markerGroup.center(center, center); */
+    markerGroup.add(markerOuter, markerInner);
     markerGroup.translation.x = center;
     markerGroup.translation.y = center;
     console.log(cueGroup);
     two.update();
+  }
+  
+  function makeRoundedRectangle(x1, y1, x2, y2, radius) {
+    var width = x2 - x1;
+    var height = y2 - y1;
+    if (radius > width / 2) {
+      radius = width / 2;
+    }
+    if (radius > height / 2) {
+      radius = height / 2;
+    }
+    
+    var objects = new Array();
+    objects.push(two.makeLine(x1 + radius, y1, x2 - radius, y1));
+    objects.push(two.makeCurve(x2 - radius, y1, x2, y1 + radius, true));
+    objects.push(two.makeLine(x2, y1 + radius, x2, y2 - radius));
+    objects.push(two.makeCurve(x2, y2 - radius, x2 - radius, y2, true));
+    objects.push(two.makeLine(x2 - radius, y2, x1 + radius, y2));
+    objects.push(two.makeCurve(x1 + radius, y2, x1, y2 - radius, true));
+    objects.push(two.makeLine(x1, y2 - radius, x1, y1 + radius));
+    objects.push(two.makeCurve(x1, y1 + radius, x1 + radius, y1, true));
+    
+/*     vectors.push(new Two.Vector(x1, y1)); */
+/*     vectors.push(new Two.Vector(x1 + width / 2, y1 - radius)); */
+/*     vectors.push(new Two.Vector(x2, y1)); */
+/*     vectors.push(new Two.Vector(x2, y2)); */
+/*     vectors.push(new Two.Vector(x1, y2)); */
+    return two.makeGroup(objects);
   }
   
   
@@ -260,6 +290,11 @@ $(document).ready(function () {
   
   function resetMarker() {
     markerGroup.rotation = 0;
+    console.log(markerGroup.rotation);
+    two.bind('update', function() {
+      markerGroup.rotation += 0;
+      // do nothing
+    });
     two.update();
   }
   
@@ -274,7 +309,7 @@ $(document).ready(function () {
 /*       var cueID = '#cue-' + beat; */
 /*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
       console.log(angle);
-      var cue = two.makeCircle(- radius * Math.cos(angle),radius * Math.sin(angle), markerRadius);
+      //var cue = 
       cue.fill = '#fff';
       cue.noStroke();
       cueGroup.add(cue);
