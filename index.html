@@ -9,6 +9,7 @@
 	
 	<!-- Stylesheets -->
 	
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,600' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="./css/bootstrap.min.css">
 	<link rel="stylesheet" href="./css/style.css">
 	
@@ -26,7 +27,30 @@
   <div id="game-container">
     <!-- <canvas id="game" width="640px" height="530px"></canvas> -->
     <div id="menu">
-      <button class="btn" id="start-game" >Play game</button>
+      <h1>Rhythm Game Prototype</h1>
+      <form class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label" for="starting-level">Start at level:</label>
+          <div class="controls">
+            <input type="text" class="input-small" id="starting-level" value="1">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="num-loops-input"># of loops per trial:</label>
+          <div class="controls">
+            <input type="text" class="input-small" id="num-loops-input" value="8"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="num-trials-input"># of trials:</label>
+          <div class="controls">
+            <input type="text" class="input-small" id="num-trials-input" value="8"/>
+            <button  id="start-game" >Play</button>
+            <a id="instructions-btn">?</a>
+          </div>
+        </div>
+      </form>
+      
     </div>
     
     
@@ -37,14 +61,6 @@
         <span class="info-tab" id="score-info">SCORE <span id="score">0</span></span>
       </div>
       <div id="graphics-container"></div>
-<!--       <span id="loop-info">LOOP <span id="loop">1</span> of <span id="num-loops"></span></span> -->
-      <!--
-<div id="circle-outer"></div>
-      <div id="circle-middle"></div>
-      <div id="circle-inner"></div>
-      
-      <div id="marker"></div>
--->
       <div id="listen">LISTEN</div>
       <div id="play">PLAY</div>
       <div id="multiplier"><p>SCORE X1</p></div>

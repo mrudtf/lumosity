@@ -138,14 +138,15 @@ $(document).ready(function () {
     two.update();
   }
 
-  $('#start-game').click( function() {
-    runGame(STARTING_LEVEL, LOOPS_PER_TRIAL, NUM_TRIALS);
+  $('#start-game').click( function(e) {
+    e.preventDefault();
+    runGame($('#starting-level').val(), $('#num-loops-input').val(), $('#num-trials-input').val());
   });
   
   
   
   function runGame(startingLevel, numLoops, numTrials) {
-    $('#menu, #countoff, #dialog, #multiplier, #play').hide();
+    $('#menu, #countoff, #dialog-container, #multiplier, #play').hide();
     $('#game').show();
     
     $('#num-trials').html(numTrials);
@@ -219,7 +220,7 @@ $(document).ready(function () {
     setTimeout( function() {
       two.pause();
       resetMarker();
-      $('#dialog').fadeIn();
+      $('#dialog-container').fadeIn();
       $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
       var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
       $('#dialog-accuracy').html(accuracy + '% accuracy');
@@ -229,12 +230,12 @@ $(document).ready(function () {
       }
       $('#dialog-points').html(pointSign + rhy.points + ' points');
       var nextGameStarted = false;
-      setTimout( function() {
+      setTimeout( function() {
         if(nextGameStarted)
           return;
         nextGameStarted = true;
         rhy.running = false;
-        $('#dialog').fadeOut();
+        $('#dialog-container').fadeOut();
         if(accuracy > NEXT_LEVEL_ACC) {
           level++;
         } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
@@ -323,6 +324,10 @@ $(document).ready(function () {
     });
   }
   
+  function setDifficulty() {
+    
+  }
+  
   function clearTrial() {
     $('.cue').remove();
     $('.cue-hit').remove();
@@ -333,11 +338,11 @@ $(document).ready(function () {
   function toggleCombo(flag) {
     console.log(markerGroup.children);
     if(flag == true) {
-      markerOuter.stroke = '#EB9023';
+/*       markerOuter.stroke = '#EB9023'; */
       markerInner.stroke = '#FDA92F';
     }
     else if(flag == false) {
-      markerOuter.stroke = '#eee';
+/*       markerOuter.stroke = '#eee'; */
       markerInner.stroke = '#fff';
     }
   }
@@ -353,9 +358,14 @@ $(document).ready(function () {
     this.combo = 0;
     this.points = 0;
     this.length = 8; // one 4/4 measure in eigth notes
+    
     if (level > 6) {
       this.length = 12; // 2 4/4 measures in eight notes
     }
+    if (level > 10) {
+    
+    }
+    
     for(var i = 0; i < this.length; i++) {
       this.beats[i] = 0;
     }
