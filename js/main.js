@@ -38,7 +38,7 @@ var NEXT_LEVEL_ACC = 80;
 var BACK_LEVEL_ACC = 30;
 
 var LEVEL_FADE_CUES = 3;
-var LEVEL_NO_CUES = 3;
+var LEVEL_NO_CUES = 6;
 
 var trial = 0;
 var level = 0;
@@ -140,7 +140,7 @@ $(document).ready(function () {
 
   $('#start-game').click( function(e) {
     e.preventDefault();
-    runGame($('#starting-level').val(), $('#num-loops-input').val(), $('#num-trials-input').val());
+    runGame(parseInt($('#starting-level').val()), parseInt($('#num-loops-input').val()), parseInt($('#num-trials-input').val()));
   });
   
   
@@ -216,7 +216,7 @@ $(document).ready(function () {
         hit(rhy);
       }
     });
-    
+    var totalLoops = LISTEN_LOOPS + numLoops;
     setTimeout( function() {
       two.pause();
       resetMarker();
@@ -242,36 +242,19 @@ $(document).ready(function () {
           level--;
         }
         runTrial(numLoops, numTrials);
-      }, 2000);
-/*
-      $('#nextTrial').click( function() {
-        if(nextGameStarted)
-          return;
-        nextGameStarted = true;
-        rhy.running = false;
-        $('#dialog').fadeOut();
-        if(accuracy > NEXT_LEVEL_ACC) {
-          level++;
-        } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
-          level--;
-        }
-        runTrial(numLoops, numTrials);
-      });
-*/
-    }, rhy.interval * 8 + rhy.duration * (LISTEN_LOOPS + numLoops));
+      }, 3000);
+    }, rhy.interval * 8 + rhy.duration * (totalLoops));
   }
   
   function resetMarker() {
     markerGroup.rotation = 0;
-    console.log(markerGroup.rotation);
-    two.bind('update', function() {
-      markerGroup.rotation += 0;
-      // do nothing
-    });
     two.update();
   }
   
   function drawCues(rhy) {
+    if(level >= LEVEL_NO_CUES) {
+      return;
+    }
     for(var beat in rhy.cues) {
       var angle = rhy.cues[beat];
       var cue = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
@@ -280,6 +263,7 @@ $(document).ready(function () {
       cue.stroke = 'rgba(0, 0, 0, .5)';
       cue.linewidth = markLargeThickness;
       cueGroup.add(cue);
+      fadeCue(cue);
     }
     two.update();
   }
@@ -324,6 +308,13 @@ $(document).ready(function () {
     });
   }
   
+  function fadeCue(cue) {
+    two.bind('update', function() {
+      console.log('fading!');
+      cue.opacity -= .005;
+    });
+  }
+  
   function setDifficulty() {
     
   }
@@ -336,7 +327,6 @@ $(document).ready(function () {
   }
   
   function toggleCombo(flag) {
-    console.log(markerGroup.children);
     if(flag == true) {
 /*       markerOuter.stroke = '#EB9023'; */
       markerInner.stroke = '#FDA92F';
@@ -363,7 +353,7 @@ $(document).ready(function () {
       this.length = 12; // 2 4/4 measures in eight notes
     }
     if (level > 10) {
-    
+      this.length = 16;
     }
     
     for(var i = 0; i < this.length; i++) {
