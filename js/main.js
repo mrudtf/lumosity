@@ -24,7 +24,7 @@ var MIN_TEMPO = 110;
 var MAX_TEMPO = 130;
 
 var MAX_LEVEL = 10;
-var LOOPS_PER_TRIAL = 4;
+var LOOPS_PER_TRIAL = 8;
 var NUM_TRIALS = 8; 
 
 var COMBO_LOOPS = 2;
@@ -52,30 +52,24 @@ var circleYPos = 240;
 var circleR = 124;
 var circleBorderThickness = 8;
 
-var arc_param1 = {
-  center: [circleXPos, circleYPos],
-  radius: circleR,
-  start: 180,
-  end: 0,
-  dir: -1
+function loadInstruments() {
+    createjs.Sound.registerSound('files/count.wav', 'count');
+    createjs.Sound.registerSound('files/1.mp3', 'inst1');
+    instruments.push('inst1');
+    createjs.Sound.registerSound('files/1_miss.mp3', 'inst1miss');
+    instruments.push('inst1miss');
+    createjs.Sound.registerSound('files/2.wav', 'inst2');
+    instruments.push('inst2');
 }
-
-var arc_param2 = {
-  center: [circleXPos, circleYPos],
-  radius: circleR,
-  start: 0,
-  end: 180,
-  dir: -1
-}
-
-// Initialize two.js graphics
 
 $(document).ready(function () {
-  $('#game').hide();
-  $('#spacebar').hide();
 
   loadInstruments();
-/*   runGame(1, 2, 8); */
+
+  //// Initialize Graphics ////
+  
+  $('#game').hide();
+  $('#spacebar').hide();
 
   var sideLength = 300;
   var center = sideLength / 2;
@@ -84,20 +78,24 @@ $(document).ready(function () {
   var markSmallLength = 24;
   var markLargeThickness = 24;
   var markSmallThickness = 10;
-  
-  var elem = document.getElementById('graphics-container');
-  var two = new Two({width: sideLength, height: sideLength}).appendTo(elem);
-  var trackGroup = two.makeGroup();
-  var cueGroup = two.makeGroup();
-  var markerGroup = two.makeGroup();
-  
-  
   var trackOuterWidth = 2;
   var trackInnerWidth = 50;
   
-  initGraphics();
+  var elem = document.getElementById('graphics-container');
+  var two = new Two({width: sideLength, height: sideLength}).appendTo(elem);
+  var trackGroup;
+  var cueGroup;
+  var markerGroup;
+  var markerOuter;
+  var markerInner;
   
   function initGraphics() {
+    two.clear();
+    
+    trackGroup = two.makeGroup();
+    cueGroup = two.makeGroup();
+    markerGroup = two.makeGroup();
+    
     var outerCircle = two.makeCircle(0, 0, radius + trackInnerWidth / 2 + trackOuterWidth / 2);
     var middleCircle = two.makeCircle(0, 0, radius);
     var innerCircle = two.makeCircle(0, 0, radius - trackInnerWidth / 2 - trackOuterWidth / 2);
@@ -124,11 +122,11 @@ $(document).ready(function () {
     cueGroup.translation.x = center;
     cueGroup.translation.y = center;
     
-    var markerOuter = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
+    markerOuter = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
     markerOuter.translation.set(0, -radius);
     markerOuter.stroke = '#eee';
     markerOuter.linewidth = markLargeThickness;
-    var markerInner = two.makeLine(0, -markSmallLength / 2, 0, markSmallLength / 2);
+    markerInner = two.makeLine(0, -markSmallLength / 2, 0, markSmallLength / 2);
     markerInner.translation.set(0, -radius);
     markerInner.stroke = '#fff';
     markerInner.linewidth = markSmallThickness;
@@ -136,75 +134,27 @@ $(document).ready(function () {
     markerGroup.add(markerOuter, markerInner);
     markerGroup.translation.x = center;
     markerGroup.translation.y = center;
-    console.log(cueGroup);
+    
     two.update();
   }
-  
-  function makeRoundedRectangle(x1, y1, x2, y2, radius) {
-    var width = x2 - x1;
-    var height = y2 - y1;
-    if (radius > width / 2) {
-      radius = width / 2;
-    }
-    if (radius > height / 2) {
-      radius = height / 2;
-    }
-    
-    var objects = new Array();
-    objects.push(two.makeLine(x1 + radius, y1, x2 - radius, y1));
-    objects.push(two.makeCurve(x2 - radius, y1, x2, y1 + radius, true));
-    objects.push(two.makeLine(x2, y1 + radius, x2, y2 - radius));
-    objects.push(two.makeCurve(x2, y2 - radius, x2 - radius, y2, true));
-    objects.push(two.makeLine(x2 - radius, y2, x1 + radius, y2));
-    objects.push(two.makeCurve(x1 + radius, y2, x1, y2 - radius, true));
-    objects.push(two.makeLine(x1, y2 - radius, x1, y1 + radius));
-    objects.push(two.makeCurve(x1, y1 + radius, x1 + radius, y1, true));
-    
-/*     vectors.push(new Two.Vector(x1, y1)); */
-/*     vectors.push(new Two.Vector(x1 + width / 2, y1 - radius)); */
-/*     vectors.push(new Two.Vector(x2, y1)); */
-/*     vectors.push(new Two.Vector(x2, y2)); */
-/*     vectors.push(new Two.Vector(x1, y2)); */
-    return two.makeGroup(objects);
-  }
-  
-  
-
 
   $('#start-game').click( function() {
     runGame(STARTING_LEVEL, LOOPS_PER_TRIAL, NUM_TRIALS);
-    
   });
   
-  function loadInstruments() {
-    createjs.Sound.registerSound('files/count.wav', 'count');
-    
-    createjs.Sound.registerSound('files/1.mp3', 'inst1');
-    instruments.push('inst1');
-    createjs.Sound.registerSound('files/1_miss.mp3', 'inst1miss');
-    instruments.push('inst1miss');
-    createjs.Sound.registerSound('files/2.wav', 'inst2');
-    instruments.push('inst2');
-  }
+  
   
   function runGame(startingLevel, numLoops, numTrials) {
-    $('#menu, #countoff, #dialog, #multiplier').hide();
-/*
-    $('#countoff').hide();
-    $('#dialog').hide();
-    $('#multiplier').hide();
-*/
+    $('#menu, #countoff, #dialog, #multiplier, #play').hide();
     $('#game').show();
     
     $('#num-trials').html(numTrials);
     $('#level').html(startingLevel);
     level = startingLevel;
     $('#num-loops').html(numLoops);
-  /*   console.log(rhy.beats); */
   
     setTimeout( function() {
       runTrial(numLoops, numTrials);
-      
     }, 100);
   }
   
@@ -214,6 +164,7 @@ $(document).ready(function () {
       return;
     }
     
+    initGraphics();
     $('#trial').html(trial);
     $('#level').html(level);
     $('#circle-outer, #circle-middle, #circle-inner').removeClass('combo');
@@ -229,31 +180,34 @@ $(document).ready(function () {
     
     // Sets rotation of the markerGroup to the equivalent percentage of the rhythm the current timestamp is on.
     two.bind('update', function(frameCount) {
-/*       var offset = .7; */
-      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;// 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
+      var offset = .7;
+      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;
+      //markerGroup.rotation += 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
     });
     
     if(level > 6) {
       $('.cue').hide();
     }
-/*     countoff(rhy); */
+    countoff(rhy);
+    $('#listen').fadeIn();
     setTimeout( function() {
       rhy.listen();
       setTimeout( function() {
         two.play();
         rhy.play(numLoops);
+        $('#listen').hide();
+        $('#play').show().delay(1000).fadeOut();
         $('#spacebar').show();
         for(var i = 0; i < numLoops; i++) {
           setTimeout(
             (function(num) {
               return function() {
-                loopMarker(rhy);
                 $('#loop').html(num);
               }
             })(i + 1), i * rhy.duration);
         }
       }, rhy.duration * LISTEN_LOOPS);
-    }, 0);// 8 * rhy.interval);
+    }, 8 * rhy.interval);
     
     $('body').keypress( function(event) {
       if(event.which == 32) { // if key pressed is space bar
@@ -268,10 +222,27 @@ $(document).ready(function () {
       $('#dialog').fadeIn();
       $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
       var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
-      $('#dialog-accuracy').html(accuracy + '%');
-      $('#dialog-points').html('+' + rhy.points + ' points');
-  /*     $('#dialog-accuracy').html(rhy.hits / rhy.numNotes + '%'); */
+      $('#dialog-accuracy').html(accuracy + '% accuracy');
+      var pointSign = '';
+      if(rhy.points > 0) {
+        pointSign = '+';
+      }
+      $('#dialog-points').html(pointSign + rhy.points + ' points');
       var nextGameStarted = false;
+      setTimout( function() {
+        if(nextGameStarted)
+          return;
+        nextGameStarted = true;
+        rhy.running = false;
+        $('#dialog').fadeOut();
+        if(accuracy > NEXT_LEVEL_ACC) {
+          level++;
+        } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
+          level--;
+        }
+        runTrial(numLoops, numTrials);
+      }, 2000);
+/*
       $('#nextTrial').click( function() {
         if(nextGameStarted)
           return;
@@ -285,7 +256,8 @@ $(document).ready(function () {
         }
         runTrial(numLoops, numTrials);
       });
-    }, /* rhy.interval * 8 + */ rhy.duration * (LISTEN_LOOPS + numLoops));
+*/
+    }, rhy.interval * 8 + rhy.duration * (LISTEN_LOOPS + numLoops));
   }
   
   function resetMarker() {
@@ -300,29 +272,55 @@ $(document).ready(function () {
   
   function drawCues(rhy) {
     for(var beat in rhy.cues) {
-/*
-      var xPos = rhy.cues[beat][0];
-      var yPos = rhy.cues[beat][1];
-*/ 
       var angle = rhy.cues[beat];
-      
-/*       var cueID = '#cue-' + beat; */
-/*       $(cueID).css({left: xPos + 'px', top: yPos + 'px'}); */
-      console.log(angle);
-      //var cue = 
-      cue.fill = '#fff';
-      cue.noStroke();
+      var cue = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
+      cue.rotation = angle;
+      cue.translation.set(Math.sin(angle) * radius, - Math.cos(angle) * radius);
+      cue.stroke = 'rgba(0, 0, 0, .5)';
+      cue.linewidth = markLargeThickness;
       cueGroup.add(cue);
     }
-/*
-    if(level >= LEVEL_FADE_CUES && level < LEVEL_NO_CUES) {
-      $('.cue').fadeOut(4000);
-    }
-    else if(level >= LEVEL_NO_CUES) {
-      $('.cue').remove();
-    }
-*/
     two.update();
+  }
+  
+  function drawHitIndicator(angle) {
+    var xPos = Math.sin(angle) * radius;
+    var xOffset = Math.sin(angle) * markSmallLength / 2;
+    var yPos = - Math.cos(angle) * radius;
+    var yOffset = Math.cos(angle) * markSmallLength / 2
+    var cue = two.makeLine(xPos + xOffset, yPos - yOffset, xPos - xOffset, yPos + yOffset);
+    cue.stroke = '#49ACE1';
+    cue.linewidth = markSmallThickness;
+    cueGroup.add(cue);
+    
+/*
+    var markerInner = two.makeLine(0, -markSmallLength / 2, 0, markSmallLength / 2);
+    markerInner.translation.set(0, -radius);
+    markerInner.stroke = '#49ACE1';
+    markerInner.linewidth = markSmallThickness;
+    markerGroup.add(markerInner);
+*/
+    
+    two.bind('update', function() {
+      cue.opacity -= .02;
+/*       markerInner.opacity -= .1; */
+    });
+    
+  }
+  
+  function drawMissIndicator(angle) {
+    var xPos = Math.sin(angle) * radius;
+    var yPos = - Math.cos(angle) * radius;
+    var cue = two.makeLine(0, -markSmallLength / 2, 0, markSmallLength / 2);
+    cue.rotation = angle;
+    cue.translation.set(xPos, yPos);
+    cue.stroke = '#FE0021';
+    cue.linewidth = markSmallThickness;
+    cueGroup.add(cue);
+    
+    two.bind('update', function() {
+      cue.opacity -= .02;
+    });
   }
   
   function clearTrial() {
@@ -330,6 +328,18 @@ $(document).ready(function () {
     $('.cue-hit').remove();
     $('.cue-miss').remove();
     $('.progress-mark').remove();
+  }
+  
+  function toggleCombo(flag) {
+    console.log(markerGroup.children);
+    if(flag == true) {
+      markerOuter.stroke = '#EB9023';
+      markerInner.stroke = '#FDA92F';
+    }
+    else if(flag == false) {
+      markerOuter.stroke = '#eee';
+      markerInner.stroke = '#fff';
+    }
   }
   
   // Rhythm class functions
@@ -449,19 +459,14 @@ $(document).ready(function () {
             var addedScore = BASE_SCORE;
             if(this.combo > 0 && this.combo % (this.numNotes * COMBO_LOOPS) == 0) {
               var multiplier = Math.floor(this.combo / this.numNotes / COMBO_LOOPS) + 1;
-              $('#circle-outer, #circle-middle, #circle-inner').addClass('combo');
-              $('#multiplier').show('scale');
               addedScore = BASE_SCORE * multiplier;
-              $('#multiplier p').html('SCORE X'+multiplier);
-              $('#multiplier').fadeIn('scale');
+              $('#multiplier p').html('x'+multiplier);
+              $('#multiplier').slideDown();
+              toggleCombo(true);
             }
             
-            var xPos = this.cues[j][0];
-            var yPos = this.cues[j][1];
-            $('#game').append('<div class="cue-hit" id="cue-hit-' + this.hits + '"></div>');
-            var cueID = '#cue-hit-' + this.hits;
-            $(cueID).css({left: xPos + 'px', top: yPos + 'px'}).fadeOut(1000);
-  
+            var angle = this.cues[j];
+            drawHitIndicator(angle);
             this.points += addedScore;
             score += addedScore;
             $('#score').html(score);
@@ -474,21 +479,19 @@ $(document).ready(function () {
     
     this.misses++;
     this.combo = 0;
-    $('#circle-outer, #circle-middle, #circle-inner').removeClass('combo');
-    $('#multiplier').fadeOut('scale');
-  /*   playSound('inst1miss', 0); */
+    toggleCombo(false);
+    $('#multiplier').slideUp();
     this.points -= MISS_SCORE;
-    score -= MISS_SCORE;
+    if(score - MISS_SCORE >= 0) {
+      score -= MISS_SCORE;
+      
+    } else {
+      score = 0;
+    }
     $('#score').html(score);
-    
     var angle = 2 * Math.PI * (inputTime % this.duration / this.duration);
-    console.log('angle: ' + angle);
-  /*   var radius = 103; */
-    xPos = circleXPos + Math.sin(angle) * circleR;
-    yPos = circleYPos - Math.cos(angle) * circleR;
-    $('#game').append('<div class="cue-miss" id="cue-miss-' + this.misses + '"></div>');
-    var cueID = '#cue-miss-' + this.misses;
-    $(cueID).css({left: xPos, top: yPos}).fadeOut();
+    
+    drawMissIndicator(angle);
   }
   
   function addScore(num) {
@@ -524,11 +527,6 @@ $(document).ready(function () {
   }
   
   // Game functions
-  
-  function loopMarker(rhy) {
-    $('#marker').animate({path : new $.path.arc(arc_param1)}, rhy.duration / 2, 'linear').animate({path : new $.path.arc(arc_param2)}, rhy.duration / 2, 'linear');
-  }
-  
   function drawProgressMarkers(numLoops) {
     for(var i = 0; i < LISTEN_LOOPS; i++) {
       $('#progress-play').before('<div class="progress-mark" id="progress-mark-listen-'+i+'"></div>');
