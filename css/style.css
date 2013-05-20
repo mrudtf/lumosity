@@ -20,14 +20,18 @@ body {
 }
 
 #menu {
+  padding: 20px;
   position: relative;
-  top: 15%;
 }
 
 #menu h1 {
   color: #333;
-  margin-bottom: 50px;
+  margin-bottom: 20px;
   text-align: center;
+}
+
+#menu > div {
+  padding: 0 200px;
 }
 
 #menu form {
@@ -46,8 +50,10 @@ body {
   border-radius: 4px;
   box-shadow: 0 3px 0 0 #BA3A24;
   display: block;
+  left: 175px;
   margin-top: 30px;
   padding: 10px 38px;
+  position: relative;
 }
 
 #menu form button:hover {
@@ -57,11 +63,11 @@ body {
 #instructions-btn {
   background: #999;
   border-radius: 50%;
-  bottom: 5px;
+  bottom: 45px;
   color: white;
   font-size: 18px;
   height: 24px;
-  left: 410px;
+  left: 426px;
   margin: 0 0 0 -12px;
   padding: 2px;
   position: absolute;

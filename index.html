@@ -19,6 +19,7 @@
   <script src="http://code.createjs.com/createjs-2013.02.12.min.js"></script>
   <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="./js/jquery.path.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
   <script src="./js/two.min.js"></script>
   <script src="./js/main.js"></script>
 	
@@ -28,29 +29,59 @@
     <!-- <canvas id="game" width="640px" height="530px"></canvas> -->
     <div id="menu">
       <h1>Rhythm Game Prototype</h1>
-      <form class="form-horizontal">
-        <div class="control-group">
-          <label class="control-label" for="starting-level">Start at level:</label>
-          <div class="controls">
-            <input type="text" class="input-small" id="starting-level" value="1">
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button type="button" class="btn" id="standard-game-btn" data-toggle="button">Standard Game</button>
+        <button type="button" class="btn" id="custom-rules-btn" data-toggle="button">Custom Rules</button>
+      </div>
+      <form class="form-horizontal" id="game-form">
+        <div id="custom-controls">
+          <div class="control-group">
+            <label class="control-label" for="custom-rhythms">Use custom rhythms</label>
+            <div class="controls">
+              <label for="custom-yes" class="radio"><input type="radio" class="" id="custom-yes" name="custom-rhythms" value="no" checked="true" />No</label>
+              <label for="custom-no" class="radio"><input type="radio" class="" id="custom-no" name="custom-rhythms" value="yes"  />Yes</label>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="rhythms-input">Custom rhythms</label>
+            <div class="controls">
+              <textarea id="rhythms-input" rows="3" cols="50">10111010&#x0D;11111111</textarea>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="tempo">Tempo</label>
+            <div class="controls">
+              <input type="text" class="input-small" id="tempo" value="120">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="rhythm-length">Rhythm Length (in beats)</label>
+            <div class="controls">
+              <input type="text" class="input-small" id="rhythm-length" value="8">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="starting-level">Start at level</label>
+            <div class="controls">
+              <input type="text" class="input-small" id="starting-level" value="1">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="num-loops-input"># of loops per trial</label>
+            <div class="controls">
+              <input type="text" class="input-small" id="num-loops-input" value="8"/>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="num-trials-input"># of trials</label>
+            <div class="controls">
+              <input type="text" class="input-small" id="num-trials-input" value="8"/>
+            </div>
           </div>
         </div>
-        <div class="control-group">
-          <label class="control-label" for="num-loops-input"># of loops per trial:</label>
-          <div class="controls">
-            <input type="text" class="input-small" id="num-loops-input" value="8"/>
-          </div>
-        </div>
-        <div class="control-group">
-          <label class="control-label" for="num-trials-input"># of trials:</label>
-          <div class="controls">
-            <input type="text" class="input-small" id="num-trials-input" value="8"/>
-            <button  id="start-game" >Play</button>
-            <a id="instructions-btn">?</a>
-          </div>
-        </div>
+        <button  id="start-game" >Play</button>
+        <a id="instructions-btn">?</a>
       </form>
-      
     </div>
     
     

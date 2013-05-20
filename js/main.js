@@ -6,22 +6,15 @@ Date: April 27, 2013
 
 // Parameters
 
-var TESTING = false;
-
-var testRhythms = [
-                    [1, 0, 1, 0, 1, 0, 1, 0],
-                    [1, 0, 1, 0, 1, 0, 0, 0],
-                    [1, 1, 0, 0, 1, 0, 0, 0],
-                    [1, 0, 0, 1, 1, 0, 0, 0],
-                    [1, 1, 0, 0, 0, 0, 0, 0],
-                    [1, 0, 0, 1, 0, 0, 1, 0],
-                    [0, 0, 1, 0, 1, 0, 0, 1]
-                  ];
+var testRhythms = [];
 
 var STARTING_LEVEL = 1;
 
 var MIN_TEMPO = 110;
 var MAX_TEMPO = 130;
+
+var testingTempo;
+var testingLength;
 
 var MAX_LEVEL = 10;
 var LOOPS_PER_TRIAL = 8;
@@ -31,7 +24,6 @@ var COMBO_LOOPS = 2;
 var LISTEN_LOOPS = 2;
 
 var BASE_SCORE = 50;
-/* var COMBO_SCORE = 200; */
 var MISS_SCORE = 30;
 
 var NEXT_LEVEL_ACC = 80;
@@ -137,15 +129,43 @@ $(document).ready(function () {
     
     two.update();
   }
+  
+  $('#custom-controls').hide();
+  $('#standard-game-btn').button('toggle').click( function() {
+    $('#custom-controls').hide();
+  });
+  $('#custom-rules-btn').click( function() {
+    $('#custom-controls').show();
+  });
 
   $('#start-game').click( function(e) {
     e.preventDefault();
-    runGame(parseInt($('#starting-level').val()), parseInt($('#num-loops-input').val()), parseInt($('#num-trials-input').val()));
+    if($('#custom-rules-btn').hasClass('active')) {
+      if($('input[name=custom-rhythms]:checked', '#game-form').val() == 'yes') { 
+        var lines = $('#rhythms-input').val().split('\n');
+        for(var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var rhythm = [];
+          for(var j = 0; j < line.length; j++) {
+            rhythm.push(line.charAt(j));
+          }
+          testRhythms.push(rhythm);
+        }
+        console.log(testRhythms);
+      }
+      testingLength = $('#rhythm-length').val();
+      testingTempo = $('#tempo').val();
+      testing = true;
+      runGame(parseInt($('#starting-level').val()), parseInt($('#num-loops-input').val()), parseInt($('#num-trials-input').val()), true);
+    }
+    else {
+      runGame(STARTING_LEVEL, LOOPS_PER_TRIAL, NUM_TRIALS, false);
+    }
   });
   
   
   
-  function runGame(startingLevel, numLoops, numTrials) {
+  function runGame(startingLevel, numLoops, numTrials, testing) {
     $('#menu, #countoff, #dialog-container, #multiplier, #play').hide();
     $('#game').show();
     
@@ -155,11 +175,11 @@ $(document).ready(function () {
     $('#num-loops').html(numLoops);
   
     setTimeout( function() {
-      runTrial(numLoops, numTrials);
+      runTrial(numLoops, numTrials, testing);
     }, 100);
   }
   
-  function runTrial(numLoops, numTrials) {
+  function runTrial(numLoops, numTrials, testing) {
     trial++;
     if(trial >= numTrials) {
       return;
@@ -173,7 +193,7 @@ $(document).ready(function () {
     $('#spacebar').hide();
     
     clearTrial();
-    var rhy = new Rhythm(TESTING);
+    var rhy = new Rhythm(testing);
     drawCues(rhy);
     drawProgressMarkers(numLoops);
     
@@ -241,7 +261,7 @@ $(document).ready(function () {
         } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
           level--;
         }
-        runTrial(numLoops, numTrials);
+        runTrial(numLoops, numTrials, testing);
       }, 3000);
     }, rhy.interval * 8 + rhy.duration * (totalLoops));
   }
@@ -263,7 +283,9 @@ $(document).ready(function () {
       cue.stroke = 'rgba(0, 0, 0, .5)';
       cue.linewidth = markLargeThickness;
       cueGroup.add(cue);
-      fadeCue(cue);
+      if(level >= LEVEL_FADE_CUES) {
+        fadeCue(cue);
+      }
     }
     two.update();
   }
@@ -355,11 +377,18 @@ $(document).ready(function () {
     if (level > 10) {
       this.length = 16;
     }
-    
+    if(testing) {
+      this.length = testingLength;
+    }
     for(var i = 0; i < this.length; i++) {
       this.beats[i] = 0;
     }
-    this.tempo = Math.floor(Math.random() * (MAX_TEMPO - MIN_TEMPO + 1)) + MIN_TEMPO; // randomly selects a tempo between the min and max
+    if(testing) {
+      this.tempo = testingTempo;
+    }
+    else {
+      this.tempo = Math.floor(Math.random() * (MAX_TEMPO - MIN_TEMPO + 1)) + MIN_TEMPO; // randomly selects a tempo between the min and max
+    }
     this.interval = 60000 / this.tempo / 2; // conversion from bpm to millis per eight note
     this.duration = this.length * this.interval; // millis duration of rhythm
     
@@ -380,8 +409,15 @@ $(document).ready(function () {
     }
     
     if(this.testing == true) {
-      if(trial < testRhythms.length) {
+      if(trial <= testRhythms.length) {
         this.beats = testRhythms[trial - 1];
+        var noteCounter = 0;
+        for(var i = 0; i < this.beats.length; i++) {
+          if(this.beats[i] == 1) {
+            noteCounter++;
+          }
+        }
+        this.numNotes = noteCounter;
       }
     }
     
@@ -389,11 +425,6 @@ $(document).ready(function () {
     for(var i = 0; i < this.length; i++) {
       if(this.beats[i] == 1) {
         var angle = 2 * Math.PI * i / this.length;
-/*
-        var xPos = circleXPos + circleR * Math.sin(angle);
-        var yPos = circleYPos - circleR * Math.cos(angle);
-        var coords = [xPos, yPos];
-*/
         this.cues[i] = angle;
       }
     }
