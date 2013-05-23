@@ -7,14 +7,15 @@ Date: April 27, 2013
 // Parameters
 
 var testRhythms = [];
+var testingTempo;
+var testingLength;
+
+var negativeFeedbackVolume = 0;
 
 var STARTING_LEVEL = 1;
 
 var MIN_TEMPO = 110;
 var MAX_TEMPO = 130;
-
-var testingTempo;
-var testingLength;
 
 var MAX_LEVEL = 10;
 var LOOPS_PER_TRIAL = 8;
@@ -24,20 +25,31 @@ var COMBO_LOOPS = 2;
 var LISTEN_LOOPS = 2;
 
 var BASE_SCORE = 50;
-var MISS_SCORE = 30;
+var MISS_SCORE = 40;
 
 var NEXT_LEVEL_ACC = 80;
 var BACK_LEVEL_ACC = 30;
 
-var LEVEL_FADE_CUES = 3;
-var LEVEL_NO_CUES = 6;
+var LEVEL_EIGHTH_NOTES = 3;
+var LEVEL_TRIPLET_NOTES = 6;
+var LEVEL_SIXTEENTH_NOTES = 9;
+
+var LEVEL_TWO_MEASURES = 10;
+var LEVEL_THREE_MEASURES = 13;
+var LEVEL_FOUR_MEASURES = 16;
+
+var LEVEL_FADE_CUES = 4;
+var LEVEL_NO_CUES = 8;
+
+var LEVEL_FADE_MARKER = 4;
+var LEVEL_NO_MARKER = 8;
 
 var trial = 0;
 var level = 0;
 var score = 0;
 
 var instruments = [];
-var bucketSize = 200; // size of bucket when evaluating hits, in millis
+var BUCKET_SIZE = 200; // size of bucket when evaluating hits, in millis
 
 var circleXPos = 320;
 var circleYPos = 240;
@@ -140,13 +152,16 @@ $(document).ready(function () {
 
   $('#start-game').click( function(e) {
     e.preventDefault();
-    if($('#custom-rules-btn').hasClass('active')) {
-      if($('input[name=custom-rhythms]:checked', '#game-form').val() == 'yes') { 
+    if($('#negative-feedback').is(':checked')) {
+      negativeFeedbackVolume = 0.3;
+    }
+    if ($('#custom-rules-btn').hasClass('active')) {
+      if ($('input[name=custom-rhythms]:checked', '#game-form').val() == 'yes') { 
         var lines = $('#rhythms-input').val().split('\n');
-        for(var i = 0; i < lines.length; i++) {
+        for (var i = 0; i < lines.length; i++) {
           var line = lines[i];
           var rhythm = [];
-          for(var j = 0; j < line.length; j++) {
+          for (var j = 0; j < line.length; j++) {
             rhythm.push(line.charAt(j));
           }
           testRhythms.push(rhythm);
@@ -159,7 +174,7 @@ $(document).ready(function () {
       runGame(parseInt($('#starting-level').val()), parseInt($('#num-loops-input').val()), parseInt($('#num-trials-input').val()), true);
     }
     else {
-      runGame(STARTING_LEVEL, LOOPS_PER_TRIAL, NUM_TRIALS, false);
+      runGame($('#starting-level').val(), LOOPS_PER_TRIAL, NUM_TRIALS, false);
     }
   });
   
@@ -181,7 +196,7 @@ $(document).ready(function () {
   
   function runTrial(numLoops, numTrials, testing) {
     trial++;
-    if(trial >= numTrials) {
+    if (trial > numTrials) {
       return;
     }
     
@@ -197,29 +212,34 @@ $(document).ready(function () {
     drawCues(rhy);
     drawProgressMarkers(numLoops);
     
-    resetMarker();
+    setMarker(rhy);
+
     
-    // Sets rotation of the markerGroup to the equivalent percentage of the rhythm the current timestamp is on.
-    two.bind('update', function(frameCount) {
-      var offset = .7;
-      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;
-      //markerGroup.rotation += 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
-    });
-    
-    if(level > 6) {
-      $('.cue').hide();
-    }
     countoff(rhy);
+    $('#listen').html('LISTEN');
     $('#listen').fadeIn();
     setTimeout( function() {
       rhy.listen();
+      two.play();
       setTimeout( function() {
-        two.play();
+        $('#listen').html('1');
+      }, rhy.duration * (LISTEN_LOOPS - 1));
+      setTimeout( function() {
+        $('#listen').html('2');
+      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 1);
+      setTimeout( function() {
+        $('#listen').html('READY?');
+      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 2);
+      setTimeout( function() {
+        $('#listen').html('PLAY!');
+      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 3);
+      setTimeout( function() {
+        
         rhy.play(numLoops);
         $('#listen').hide();
         $('#play').show().delay(1000).fadeOut();
         $('#spacebar').show();
-        for(var i = 0; i < numLoops; i++) {
+        for (var i = 0; i < numLoops; i++) {
           setTimeout(
             (function(num) {
               return function() {
@@ -228,10 +248,10 @@ $(document).ready(function () {
             })(i + 1), i * rhy.duration);
         }
       }, rhy.duration * LISTEN_LOOPS);
-    }, 8 * rhy.interval);
+    }, rhy.measureDuration);
     
     $('body').keypress( function(event) {
-      if(event.which == 32) { // if key pressed is space bar
+      if (event.which == 32) { // if key pressed is space bar
         event.preventDefault();
         hit(rhy);
       }
@@ -245,25 +265,25 @@ $(document).ready(function () {
       var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
       $('#dialog-accuracy').html(accuracy + '% accuracy');
       var pointSign = '';
-      if(rhy.points > 0) {
+      if (rhy.points > 0) {
         pointSign = '+';
       }
       $('#dialog-points').html(pointSign + rhy.points + ' points');
       var nextGameStarted = false;
       setTimeout( function() {
-        if(nextGameStarted)
+        if (nextGameStarted)
           return;
         nextGameStarted = true;
         rhy.running = false;
         $('#dialog-container').fadeOut();
-        if(accuracy > NEXT_LEVEL_ACC) {
+        if (accuracy > NEXT_LEVEL_ACC) {
           level++;
-        } else if(accuracy < BACK_LEVEL_ACC && level > 1) {
+        } else if (accuracy < BACK_LEVEL_ACC && level > 1) {
           level--;
         }
         runTrial(numLoops, numTrials, testing);
       }, 3000);
-    }, rhy.interval * 8 + rhy.duration * (totalLoops));
+    }, rhy.measureDuration + rhy.duration * (totalLoops));
   }
   
   function resetMarker() {
@@ -271,11 +291,26 @@ $(document).ready(function () {
     two.update();
   }
   
+  function setMarker(rhy) {
+    markerGroup.opacity = 1;
+    // Sets rotation of the markerGroup to the equivalent percentage of the rhythm the current timestamp is on.
+    if(level >= LEVEL_NO_MARKER) {
+      markerGroup.opacity = 0;
+    }
+    two.bind('update', function(frameCount) {
+      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;
+      //markerGroup.rotation += 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
+      if(level >= LEVEL_FADE_MARKER) {
+        markerGroup.opacity -= .005;
+      }
+    });
+  }
+  
   function drawCues(rhy) {
-    if(level >= LEVEL_NO_CUES) {
+    if (level >= LEVEL_NO_CUES) {
       return;
     }
-    for(var beat in rhy.cues) {
+    for (var beat in rhy.cues) {
       var angle = rhy.cues[beat];
       var cue = two.makeLine(0, -markLargeLength / 2, 0, markLargeLength / 2);
       cue.rotation = angle;
@@ -283,7 +318,7 @@ $(document).ready(function () {
       cue.stroke = 'rgba(0, 0, 0, .5)';
       cue.linewidth = markLargeThickness;
       cueGroup.add(cue);
-      if(level >= LEVEL_FADE_CUES) {
+      if (level >= LEVEL_FADE_CUES) {
         fadeCue(cue);
       }
     }
@@ -332,7 +367,6 @@ $(document).ready(function () {
   
   function fadeCue(cue) {
     two.bind('update', function() {
-      console.log('fading!');
       cue.opacity -= .005;
     });
   }
@@ -349,11 +383,11 @@ $(document).ready(function () {
   }
   
   function toggleCombo(flag) {
-    if(flag == true) {
+    if (flag == true) {
 /*       markerOuter.stroke = '#EB9023'; */
       markerInner.stroke = '#FDA92F';
     }
-    else if(flag == false) {
+    else if (flag == false) {
 /*       markerOuter.stroke = '#eee'; */
       markerInner.stroke = '#fff';
     }
@@ -369,51 +403,73 @@ $(document).ready(function () {
     this.misses = 0;
     this.combo = 0;
     this.points = 0;
-    this.length = 8; // one 4/4 measure in eigth notes
+    this.intervalsPerBeat = 1;
+    this.beatsPerMeasure = 4;
+    this.numMeasures = 1;
+    this.length;
+    this.interval;
+    this.duration;
+    this.measureDuration;
     
-    if (level > 6) {
-      this.length = 12; // 2 4/4 measures in eight notes
+    if (level >= LEVEL_EIGHTH_NOTES) {
+      this.intervalsPerBeat = 2;
     }
-    if (level > 10) {
-      this.length = 16;
+    if (level >= LEVEL_TRIPLET_NOTES) {
+      this.intervalsPerBeat = 3;
     }
-    if(testing) {
+    if (level >= LEVEL_SIXTEENTH_NOTES) {
+      this.intervalsPerBeat = 4;
+    }
+    if (level >= LEVEL_TWO_MEASURES) {
+      this.numMeasures = 2;
+    }
+    if (level >= LEVEL_THREE_MEASURES) {
+      this.numMeasures = 3;
+    }
+    if (level >= LEVEL_FOUR_MEASURES) {
+      this.numMeasures = 4;
+    }
+    
+    if (testing) {
       this.length = testingLength;
     }
-    for(var i = 0; i < this.length; i++) {
+    else {
+      this.length = this.numMeasures * this.intervalsPerBeat * this.beatsPerMeasure;
+    }
+    for (var i = 0; i < this.length; i++) {
       this.beats[i] = 0;
     }
-    if(testing) {
+    if (testing) {
       this.tempo = testingTempo;
     }
     else {
       this.tempo = Math.floor(Math.random() * (MAX_TEMPO - MIN_TEMPO + 1)) + MIN_TEMPO; // randomly selects a tempo between the min and max
     }
-    this.interval = 60000 / this.tempo / 2; // conversion from bpm to millis per eight note
+    this.interval = 60000 / this.tempo / this.intervalsPerBeat; // conversion from bpm to millis per interval
     this.duration = this.length * this.interval; // millis duration of rhythm
+    this.measureDuration = this.duration / this.numMeasures;
+    this.instrument = 0;//Math.floor(Math.random() * instruments.length); // randomly sets an instrument
     
-    this.instrument = 0//Math.floor(Math.random() * instruments.length); // randomly sets an instrument
-    
-    this.numNotes = Math.min(Math.max(Math.floor(level / 2) + 2, 3), this.length - 2); // level goes 1 to MAX_LEVEL
-    if(level == 1) {
+    this.numNotes = Math.min(Math.max(Math.floor(level / 2) + 2, 3), this.length - 1); // level goes 1 to MAX_LEVEL
+    if (level == 1) {
       this.numNotes = 4;
     }
     for (var i = 0; i < this.numNotes; i++) {
       var beat = -1;
       while(beat < 0 || this.beats[beat] == 1) {
         beat = Math.floor(Math.random() * this.length);
-        if(beat % 2 == 1 && Math.random() < (MAX_LEVEL - level + 1)/MAX_LEVEL) // reduces number of offbeat notes according to level
+        if (this.intervalsPerBeat > 1 && beat % 2 == 1 && Math.random() < (MAX_LEVEL - level + 1)/MAX_LEVEL) // reduces number of offbeat notes according to level
           beat--;
       }
       this.beats[beat] = 1;
     }
     
-    if(this.testing == true) {
-      if(trial <= testRhythms.length) {
+    if (this.testing == true) {
+      if (trial <= testRhythms.length) {
         this.beats = testRhythms[trial - 1];
         var noteCounter = 0;
-        for(var i = 0; i < this.beats.length; i++) {
-          if(this.beats[i] == 1) {
+        for (var i = 0; i < this.beats.length; i++) {
+          if (this.beats[i] == 1) {
             noteCounter++;
           }
         }
@@ -422,8 +478,8 @@ $(document).ready(function () {
     }
     
     this.cues = {};
-    for(var i = 0; i < this.length; i++) {
-      if(this.beats[i] == 1) {
+    for (var i = 0; i < this.length; i++) {
+      if (this.beats[i] == 1) {
         var angle = 2 * Math.PI * i / this.length;
         this.cues[i] = angle;
       }
@@ -433,10 +489,10 @@ $(document).ready(function () {
   
   Rhythm.prototype.listen = function() {
     var parent = this;
-    for(var i = 0; i < LISTEN_LOOPS; i++) {
-      for(var j = 0; j < this.length; j++) {
-        if(this.beats[j] == 1) {
-          playSound(instruments[parent.instrument], i * this.duration + j * this.interval);// + i * offset); // creates play instance of all loops
+    for (var i = 0; i < LISTEN_LOOPS; i++) {
+      for (var j = 0; j < this.length; j++) {
+        if (this.beats[j] == 1) {
+          playSound(instruments[parent.instrument], i * this.duration + j * this.interval, 1);// + i * offset); // creates play instance of all loops
         }
       }
       $('#progress *').removeClass('active');
@@ -455,10 +511,10 @@ $(document).ready(function () {
     this.startTime = new Date().getTime();
     this.numLoops = numLoops;
     var parent = this;
-    for(var i = 0; i < numLoops; i++) {
-      for(var j = 0; j < this.length; j++) {
-        if(this.beats[j] == 1) {
-          playSound(instruments[parent.instrument], i * this.duration + j * this.interval);// + i * offset); // creates play instance of all loops
+    for (var i = 0; i < numLoops; i++) {
+      for (var j = 0; j < this.length; j++) {
+        if (this.beats[j] == 1) {
+          playSound(instruments[parent.instrument], i * this.duration + j * this.interval, 1);// + i * offset); // creates play instance of all loops
         }
       }
       $('#progress *').removeClass('active');
@@ -474,22 +530,25 @@ $(document).ready(function () {
   
   
   Rhythm.prototype.score = function() {
-    if(this.running == false || new Date().getTime() > this.startTime + this.duration * this.numLoops) {
+    if (this.running == false || new Date().getTime() > this.startTime + this.duration * this.numLoops) {
       return;
     }
     var inputTime = new Date().getTime() - this.startTime;
-    for(var i = 0; i < this.numLoops; i++) {
-      if(inputTime >= this.duration * i - bucketSize / 2 && inputTime <= this.duration * (i + 1) - bucketSize / 2) {
-        for(var j = 0; j < this.length; j++) {
+    for (var i = 0; i < this.numLoops; i++) {
+      if (inputTime >= this.duration * i - BUCKET_SIZE / 2 && inputTime <= this.duration * (i + 1) - BUCKET_SIZE / 2) {
+        for (var j = 0; j < this.length; j++) {
           
-          if(inputTime >= this.duration * i + this.interval * j - bucketSize / 2 &&
-             inputTime <= this.duration * i + this.interval * j + bucketSize / 2 &&
+          if (inputTime >= this.duration * i + this.interval * j - BUCKET_SIZE / 2 &&
+             inputTime <= this.duration * i + this.interval * j + BUCKET_SIZE / 2 &&
              this.beats[j] == 1) {
             this.hits++;
             this.combo++;
             var addedScore = BASE_SCORE;
-            if(this.combo > 0 && this.combo % (this.numNotes * COMBO_LOOPS) == 0) {
-              var multiplier = Math.floor(this.combo / this.numNotes / COMBO_LOOPS) + 1;
+            var multiplier = Math.floor(this.combo / this.numNotes / COMBO_LOOPS) + 1;
+            addedScore = BASE_SCORE * multiplier;
+            if (this.combo > 0 && this.combo % (this.numNotes * COMBO_LOOPS) == 0) {
+              
+              
               addedScore = BASE_SCORE * multiplier;
               $('#multiplier p').html('x'+multiplier);
               $('#multiplier').slideDown();
@@ -507,13 +566,13 @@ $(document).ready(function () {
       }
     }
     // if the user did not hit on a beat
-    
+    playSound(instruments[this.instrument + 1], 0, negativeFeedbackVolume);
     this.misses++;
     this.combo = 0;
     toggleCombo(false);
     $('#multiplier').slideUp();
     this.points -= MISS_SCORE;
-    if(score - MISS_SCORE >= 0) {
+    if (score - MISS_SCORE >= 0) {
       score -= MISS_SCORE;
       
     } else {
@@ -534,8 +593,8 @@ $(document).ready(function () {
   
   function countoff(r) {
   /*   $('#countoff').show(); */
-    for(var i=0; i < 4; i++) {
-      playSound('count', r.interval * i * 2);
+    for (var i=0; i < 4; i++) {
+      playSound('count', r.interval * i * r.intervalsPerBeat);
   /*
       setTimeout( 
         (function(num) {
@@ -553,16 +612,16 @@ $(document).ready(function () {
     
   }
   
-  function playSound(instrument, delay) {
-    createjs.Sound.play(instrument, createjs.Sound.INTERRUPT_ANY, delay);
+  function playSound(instrument, delay, volume) {
+    createjs.Sound.play(instrument, createjs.Sound.INTERRUPT_ANY, delay, 0, 0, volume, 0);
   }
   
   // Game functions
   function drawProgressMarkers(numLoops) {
-    for(var i = 0; i < LISTEN_LOOPS; i++) {
+    for (var i = 0; i < LISTEN_LOOPS; i++) {
       $('#progress-play').before('<div class="progress-mark" id="progress-mark-listen-'+i+'"></div>');
     }
-    for(var i = 0; i < numLoops; i++) {
+    for (var i = 0; i < numLoops; i++) {
       $('#progress').append('<div class="progress-mark" id="progress-mark-play-'+i+'"></div>');
     }
   }

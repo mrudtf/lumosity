@@ -95,6 +95,12 @@ body {
   width: 300px;
 }
 
+#center-fix {
+  left: 268px;
+  position: absolute;
+  top: 212px;
+}
+
 #info-bar {
   position: absolute;
   right: 20px;
