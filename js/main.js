@@ -39,10 +39,10 @@ var LEVEL_THREE_MEASURES = 13;
 var LEVEL_FOUR_MEASURES = 16;
 
 var LEVEL_FADE_CUES = 4;
-var LEVEL_NO_CUES = 8;
+var LEVEL_NO_CUES = 7;
 
 var LEVEL_FADE_MARKER = 4;
-var LEVEL_NO_MARKER = 8;
+var LEVEL_NO_MARKER = 7;
 
 var trial = 0;
 var level = 0;
@@ -57,13 +57,16 @@ var circleR = 124;
 var circleBorderThickness = 8;
 
 function loadInstruments() {
-    createjs.Sound.registerSound('files/count.wav', 'count');
-    createjs.Sound.registerSound('files/1.mp3', 'inst1');
-    instruments.push('inst1');
-    createjs.Sound.registerSound('files/1_miss.mp3', 'inst1miss');
-    instruments.push('inst1miss');
-    createjs.Sound.registerSound('files/2.wav', 'inst2');
-    instruments.push('inst2');
+  var numInstruments = 12;
+
+  createjs.Sound.registerSound('files/count.mp3', 'count');
+  createjs.Sound.registerSound('files/miss.mp3', 'miss');
+  for (var i = 1; i <= numInstruments; i++) {
+    var url = 'files/' + i + '.mp3';
+    var name = 'inst' + i;
+    createjs.Sound.registerSound(url, name);
+    instruments.push(name);
+  }
 }
 
 $(document).ready(function () {
@@ -75,6 +78,7 @@ $(document).ready(function () {
   $('#game').hide();
   $('#spacebar').hide();
 
+  // Graphics variables
   var sideLength = 300;
   var center = sideLength / 2;
   var radius = 120;
@@ -141,6 +145,8 @@ $(document).ready(function () {
     
     two.update();
   }
+  
+  // Custom controls buttons
   
   $('#custom-controls').hide();
   $('#standard-game-btn').button('toggle').click( function() {
@@ -210,31 +216,32 @@ $(document).ready(function () {
     clearTrial();
     var rhy = new Rhythm(testing);
     drawCues(rhy);
+    hideMarker(rhy);
     drawProgressMarkers(numLoops);
-    
-    setMarker(rhy);
-
-    
     countoff(rhy);
+    
     $('#listen').html('LISTEN');
     $('#listen').fadeIn();
+    
     setTimeout( function() {
+      setMarker(rhy);
       rhy.listen();
-      two.play();
+      
       setTimeout( function() {
         $('#listen').html('1');
-      }, rhy.duration * (LISTEN_LOOPS - 1));
+        setTimeout( function() {
+          $('#listen').html('2');
+          setTimeout( function() {
+            $('#listen').html('READY?');
+            setTimeout( function() {
+              $('#listen').html('PLAY!');
+            }, rhy.intervalsPerBeat * rhy.interval);
+          }, rhy.intervalsPerBeat * rhy.interval);
+        }, rhy.intervalsPerBeat * rhy.interval);
+      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.duration / rhy.numMeasures);
+      
       setTimeout( function() {
-        $('#listen').html('2');
-      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 1);
-      setTimeout( function() {
-        $('#listen').html('READY?');
-      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 2);
-      setTimeout( function() {
-        $('#listen').html('PLAY!');
-      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.interval * rhy.intervalsPerBeat * 3);
-      setTimeout( function() {
-        
+        two.play();
         rhy.play(numLoops);
         $('#listen').hide();
         $('#play').show().delay(1000).fadeOut();
@@ -250,8 +257,8 @@ $(document).ready(function () {
       }, rhy.duration * LISTEN_LOOPS);
     }, rhy.measureDuration);
     
-    $('body').keypress( function(event) {
-      if (event.which == 32) { // if key pressed is space bar
+    $('body').keydown( function(event) {
+      if (event.which == 32 || event.which == 40) { // if key pressed is space bar (32)
         event.preventDefault();
         hit(rhy);
       }
@@ -259,7 +266,7 @@ $(document).ready(function () {
     var totalLoops = LISTEN_LOOPS + numLoops;
     setTimeout( function() {
       two.pause();
-      resetMarker();
+      hideMarker();
       $('#dialog-container').fadeIn();
       $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
       var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
@@ -286,9 +293,8 @@ $(document).ready(function () {
     }, rhy.measureDuration + rhy.duration * (totalLoops));
   }
   
-  function resetMarker() {
-    markerGroup.rotation = 0;
-    two.update();
+  function hideMarker() {
+    markerGroup.opacity = 0;
   }
   
   function setMarker(rhy) {
@@ -299,7 +305,6 @@ $(document).ready(function () {
     }
     two.bind('update', function(frameCount) {
       markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;
-      //markerGroup.rotation += 2 * Math.PI * 1000 / ((60 - offset) * rhy.duration);
       if(level >= LEVEL_FADE_MARKER) {
         markerGroup.opacity -= .005;
       }
@@ -399,6 +404,7 @@ $(document).ready(function () {
     this.running = false;
     this.testing = testing;
     this.beats = [];
+    this.beats2 = null;
     this.hits = 0;
     this.misses = 0;
     this.combo = 0;
@@ -448,7 +454,7 @@ $(document).ready(function () {
     this.interval = 60000 / this.tempo / this.intervalsPerBeat; // conversion from bpm to millis per interval
     this.duration = this.length * this.interval; // millis duration of rhythm
     this.measureDuration = this.duration / this.numMeasures;
-    this.instrument = 0;//Math.floor(Math.random() * instruments.length); // randomly sets an instrument
+    this.instrument = Math.floor(Math.random() * instruments.length); // randomly sets an instrument
     
     this.numNotes = Math.min(Math.max(Math.floor(level / 2) + 2, 3), this.length - 1); // level goes 1 to MAX_LEVEL
     if (level == 1) {
@@ -487,12 +493,25 @@ $(document).ready(function () {
     
   }
   
+  Rhythm.prototype.addBackgroundRhythm = function(backBeats, backInstrument) {
+    this.beats2 = backBeats;
+    this.instrument2 = backInstrument;
+  }
+  
   Rhythm.prototype.listen = function() {
     var parent = this;
+    
     for (var i = 0; i < LISTEN_LOOPS; i++) {
       for (var j = 0; j < this.length; j++) {
         if (this.beats[j] == 1) {
-          playSound(instruments[parent.instrument], i * this.duration + j * this.interval, 1);// + i * offset); // creates play instance of all loops
+          playSound(instruments[parent.instrument], i * this.duration + j * this.interval, 1);
+        }
+      }
+      if (this.beats2 != null) {
+        for (var j = 0; j < this.length; j++) {
+          if (this.beats2[j] == 1) {
+            playSound(instruments[parent.instrument], i * this.duration + j * this.interval, 1);
+          }
         }
       }
       $('#progress *').removeClass('active');
@@ -566,7 +585,7 @@ $(document).ready(function () {
       }
     }
     // if the user did not hit on a beat
-    playSound(instruments[this.instrument + 1], 0, negativeFeedbackVolume);
+    playSound('miss', 0, negativeFeedbackVolume);
     this.misses++;
     this.combo = 0;
     toggleCombo(false);
@@ -592,24 +611,9 @@ $(document).ready(function () {
   // Playback functions
   
   function countoff(r) {
-  /*   $('#countoff').show(); */
     for (var i=0; i < 4; i++) {
       playSound('count', r.interval * i * r.intervalsPerBeat);
-  /*
-      setTimeout( 
-        (function(num) {
-          return function() {
-            $('#countoff').html(num);
-          }
-      })(i+1), r.interval * i * 2);
-  */
     }
-  /*
-    setTimeout( function() {
-      $('#countoff').hide();
-    }, r.interval * i * 2);
-  */
-    
   }
   
   function playSound(instrument, delay, volume) {
