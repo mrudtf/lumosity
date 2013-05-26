@@ -90,9 +90,9 @@ body {
 }
 
 #graphics-container {
-  height: 300px;
+  height: 320px;
   margin: 90px auto 0;
-  width: 300px;
+  width: 320px;
 }
 
 #center-fix {
@@ -376,12 +376,11 @@ body {
 #dialog-container {
   background: rgba(0, 0, 0, .4);
   left: 50%;
-  margin: 0 0 0 -110px;
+  margin: 0 0 0 -140px;
   padding: 10px;
   position: absolute;
-  text-align: center;
   top: 150px;
-  width: 200px;
+  width: 260px;
   z-index: 100;
 }
 
@@ -390,8 +389,28 @@ body {
   padding: 20px;
 }
 
+#dialog-left, #dialog-right {
+  display: inline-block;
+  height: 100%;
+  position: relative;
+  text-align: left;
+  width: 45%;
+}
+
+#dialog-left {
+  text-align: right;
+}
+
+#dialog-right {
+  padding-left: 10px;
+}
+
 #dialog p {
   color: #333;
   font-size: 24px;
   margin: 15px 0;
+}
+
+#dialog-right p {
+  font-weight: bold;
 }

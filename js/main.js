@@ -19,7 +19,7 @@ var MAX_TEMPO = 130;
 
 var MAX_LEVEL = 10;
 var LOOPS_PER_TRIAL = 8;
-var NUM_TRIALS = 8; 
+var NUM_TRIALS = 15; 
 
 var COMBO_LOOPS = 2;
 var LISTEN_LOOPS = 2;
@@ -57,10 +57,12 @@ var circleR = 124;
 var circleBorderThickness = 8;
 
 function loadInstruments() {
-  var numInstruments = 12;
-
+  var numInstruments = 9;
   createjs.Sound.registerSound('files/count.mp3', 'count');
   createjs.Sound.registerSound('files/miss.mp3', 'miss');
+  createjs.Sound.registerSound('files/combo.mp3', 'combo');
+  createjs.Sound.registerSound('files/comboOff.mp3', 'comboOff');
+  
   for (var i = 1; i <= numInstruments; i++) {
     var url = 'files/' + i + '.mp3';
     var name = 'inst' + i;
@@ -79,14 +81,14 @@ $(document).ready(function () {
   $('#spacebar').hide();
 
   // Graphics variables
-  var sideLength = 300;
+  var sideLength = 320;
   var center = sideLength / 2;
   var radius = 120;
   var markLargeLength = 26;
   var markSmallLength = 24;
   var markLargeThickness = 24;
   var markSmallThickness = 10;
-  var trackOuterWidth = 2;
+  var trackOuterWidth = 6;
   var trackInnerWidth = 50;
   
   var elem = document.getElementById('graphics-container');
@@ -226,22 +228,22 @@ $(document).ready(function () {
     setTimeout( function() {
       setMarker(rhy);
       rhy.listen();
-      
+      two.play();
       setTimeout( function() {
-        $('#listen').html('1');
+        $('#listen').html('READY?');
         setTimeout( function() {
-          $('#listen').html('2');
+          //$('#listen').html('2');
           setTimeout( function() {
-            $('#listen').html('READY?');
+            $('#listen').html('PLAY!');
             setTimeout( function() {
-              $('#listen').html('PLAY!');
+              //$('#listen').html('PLAY!');
             }, rhy.intervalsPerBeat * rhy.interval);
           }, rhy.intervalsPerBeat * rhy.interval);
         }, rhy.intervalsPerBeat * rhy.interval);
-      }, rhy.duration * (LISTEN_LOOPS - 1) + rhy.duration / rhy.numMeasures);
+      }, rhy.duration * (LISTEN_LOOPS - 2) + rhy.duration / rhy.numMeasures);
       
       setTimeout( function() {
-        two.play();
+        
         rhy.play(numLoops);
         $('#listen').hide();
         $('#play').show().delay(1000).fadeOut();
@@ -267,15 +269,8 @@ $(document).ready(function () {
     setTimeout( function() {
       two.pause();
       hideMarker();
-      $('#dialog-container').fadeIn();
-      $('#dialog-count').html(rhy.hits + ' / ' + rhy.numNotes * numLoops + ' beats');
-      var accuracy = Math.round(rhy.hits / (rhy.numNotes * numLoops) * 100);
-      $('#dialog-accuracy').html(accuracy + '% accuracy');
-      var pointSign = '';
-      if (rhy.points > 0) {
-        pointSign = '+';
-      }
-      $('#dialog-points').html(pointSign + rhy.points + ' points');
+      var accuracy = Math.round((rhy.hits - rhy.misses) / (rhy.numNotes * numLoops) * 100);
+      endTrialDialog(rhy, accuracy, numLoops);
       var nextGameStarted = false;
       setTimeout( function() {
         if (nextGameStarted)
@@ -283,14 +278,29 @@ $(document).ready(function () {
         nextGameStarted = true;
         rhy.running = false;
         $('#dialog-container').fadeOut();
+        
         if (accuracy > NEXT_LEVEL_ACC) {
           level++;
-        } else if (accuracy < BACK_LEVEL_ACC && level > 1) {
+        }
+        else if (accuracy < BACK_LEVEL_ACC && level > 1) {
           level--;
         }
+        
         runTrial(numLoops, numTrials, testing);
-      }, 3000);
+      }, 4000);
     }, rhy.measureDuration + rhy.duration * (totalLoops));
+  }
+  
+  function endTrialDialog(rhy, accuracy, numLoops) {
+    $('#dialog-container').fadeIn();
+    $('#dialog-hits').html(rhy.hits + ' / ' + rhy.numNotes * numLoops);
+    $('#dialog-misses').html(rhy.misses);
+    $('#dialog-accuracy').html(accuracy + '%');
+    var pointSign = '';
+    if (rhy.points > 0) {
+      pointSign = '+';
+    }
+    $('#dialog-points').html(pointSign + rhy.points);
   }
   
   function hideMarker() {
@@ -300,13 +310,13 @@ $(document).ready(function () {
   function setMarker(rhy) {
     markerGroup.opacity = 1;
     // Sets rotation of the markerGroup to the equivalent percentage of the rhythm the current timestamp is on.
-    if(level >= LEVEL_NO_MARKER) {
-      markerGroup.opacity = 0;
-    }
     two.bind('update', function(frameCount) {
-      markerGroup.rotation = (new Date().getTime() - rhy.startTime) % rhy.duration / rhy.duration * 2 * Math.PI;
-      if(level >= LEVEL_FADE_MARKER) {
-        markerGroup.opacity -= .005;
+      markerGroup.rotation = (new Date().getTime() - rhy.listeningStartTime) % rhy.duration / rhy.duration * 2 * Math.PI;
+      if(level >= LEVEL_FADE_MARKER && level < LEVEL_NO_MARKER) {
+        markerGroup.opacity -= .002;
+      }
+      if(level >= LEVEL_NO_MARKER && new Date().getTime() > rhy.listeningStartTime + rhy.measureDuration * LISTEN_LOOPS) {
+        markerGroup.opacity = Math.max(markerGroup.opacity - .007, 0);
       }
     });
   }
@@ -372,7 +382,7 @@ $(document).ready(function () {
   
   function fadeCue(cue) {
     two.bind('update', function() {
-      cue.opacity -= .005;
+      cue.opacity -= .002;
     });
   }
   
@@ -389,12 +399,16 @@ $(document).ready(function () {
   
   function toggleCombo(flag) {
     if (flag == true) {
-/*       markerOuter.stroke = '#EB9023'; */
+      markerOuter.stroke = '#EB9023';
       markerInner.stroke = '#FDA92F';
+      $('#multiplier').slideDown();
+      playSound('combo', 0, .6);
     }
     else if (flag == false) {
-/*       markerOuter.stroke = '#eee'; */
+      markerOuter.stroke = '#eee';
       markerInner.stroke = '#fff';
+      $('#multiplier').slideUp();
+      playSound('comboOff', 0, .6);
     }
   }
   
@@ -408,6 +422,7 @@ $(document).ready(function () {
     this.hits = 0;
     this.misses = 0;
     this.combo = 0;
+    this.comboOn = false;
     this.points = 0;
     this.intervalsPerBeat = 1;
     this.beatsPerMeasure = 4;
@@ -464,8 +479,8 @@ $(document).ready(function () {
       var beat = -1;
       while(beat < 0 || this.beats[beat] == 1) {
         beat = Math.floor(Math.random() * this.length);
-        if (this.intervalsPerBeat > 1 && beat % 2 == 1 && Math.random() < (MAX_LEVEL - level + 1)/MAX_LEVEL) // reduces number of offbeat notes according to level
-          beat--;
+        if (beat % this.intervalsPerBeat > 0 && Math.random() < (10 - level)/10) // reduces number of offbeat notes according to level
+          beat = beat % this.intervalsPerBeat;
       }
       this.beats[beat] = 1;
     }
@@ -500,7 +515,7 @@ $(document).ready(function () {
   
   Rhythm.prototype.listen = function() {
     var parent = this;
-    
+    this.listeningStartTime = new Date().getTime();
     for (var i = 0; i < LISTEN_LOOPS; i++) {
       for (var j = 0; j < this.length; j++) {
         if (this.beats[j] == 1) {
@@ -549,7 +564,7 @@ $(document).ready(function () {
   
   
   Rhythm.prototype.score = function() {
-    if (this.running == false || new Date().getTime() > this.startTime + this.duration * this.numLoops) {
+    if (this.running == false || new Date().getTime() > this.startTime + this.duration * this.numLoops - this.interval) {
       return;
     }
     var inputTime = new Date().getTime() - this.startTime;
@@ -565,13 +580,13 @@ $(document).ready(function () {
             var addedScore = BASE_SCORE;
             var multiplier = Math.floor(this.combo / this.numNotes / COMBO_LOOPS) + 1;
             addedScore = BASE_SCORE * multiplier;
+            
             if (this.combo > 0 && this.combo % (this.numNotes * COMBO_LOOPS) == 0) {
-              
-              
-              addedScore = BASE_SCORE * multiplier;
               $('#multiplier p').html('x'+multiplier);
-              $('#multiplier').slideDown();
-              toggleCombo(true);
+              if (!this.comboOn) {
+                toggleCombo(true);
+                this.comboOn = true;
+              }
             }
             
             var angle = this.cues[j];
@@ -588,18 +603,19 @@ $(document).ready(function () {
     playSound('miss', 0, negativeFeedbackVolume);
     this.misses++;
     this.combo = 0;
-    toggleCombo(false);
-    $('#multiplier').slideUp();
+    if (this.comboOn == true) {
+      toggleCombo(false);
+      this.comboOn = false;
+    }
     this.points -= MISS_SCORE;
     if (score - MISS_SCORE >= 0) {
       score -= MISS_SCORE;
-      
-    } else {
+    }
+    else {
       score = 0;
     }
     $('#score').html(score);
     var angle = 2 * Math.PI * (inputTime % this.duration / this.duration);
-    
     drawMissIndicator(angle);
   }
   
