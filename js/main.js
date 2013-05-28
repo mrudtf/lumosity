@@ -313,7 +313,7 @@ $(document).ready(function () {
     two.bind('update', function(frameCount) {
       markerGroup.rotation = (new Date().getTime() - rhy.listeningStartTime) % rhy.duration / rhy.duration * 2 * Math.PI;
       if(level >= LEVEL_FADE_MARKER && level < LEVEL_NO_MARKER) {
-        markerGroup.opacity -= .002;
+        markerGroup.opacity = Math.max(markerGroup.opacity - .002, 0);
       }
       if(level >= LEVEL_NO_MARKER && new Date().getTime() > rhy.listeningStartTime + rhy.measureDuration * LISTEN_LOOPS) {
         markerGroup.opacity = Math.max(markerGroup.opacity - .007, 0);
