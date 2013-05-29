@@ -19,7 +19,7 @@ var MAX_TEMPO = 130;
 
 var MAX_LEVEL = 10;
 var LOOPS_PER_TRIAL = 8;
-var NUM_TRIALS = 15; 
+var NUM_TRIALS = 15;
 
 var COMBO_LOOPS = 2;
 var LISTEN_LOOPS = 2;
@@ -43,6 +43,26 @@ var LEVEL_NO_CUES = 7;
 
 var LEVEL_FADE_MARKER = 4;
 var LEVEL_NO_MARKER = 7;
+
+// rhythm difficulty, # of measures, # of cues per measure, intervals per beat, cues+marker (0 = on, 1 = fading, 2 = off)
+var levelMatrix = {
+  1: [1, 1, 4, 1, 0],
+  2: [1, 1, 3, 1, 0],
+  3: [1, 1, 4, 2, 0],
+  4: [1, 1, 4, 2, 1],
+  5: [1, 1, 4, 2, 1],
+  6: [1, 1, 4, 3, 1],
+  7: [1, 1, 4, 3, 2],
+  8: [1, 1, 4, 3, 2],
+  9: [1, 1, 4, 4, 2],
+ 10: [1, 2, 4, 4, 2],
+ 11: [1, 2, 4, 4, 2],
+ 12: [1, 2, 4, 4, 2],
+ 13: [1, 3, 4, 4, 2],
+ 14: [1, 3, 4, 4, 2],
+ 15: [1, 3, 4, 4, 2],
+ 16: [1, 4, 4, 4, 2]
+}
 
 var trial = 0;
 var level = 0;
@@ -505,6 +525,10 @@ $(document).ready(function () {
         this.cues[i] = angle;
       }
     }
+    
+  }
+  
+  Rhythm.prototype.generateRhythm = function() {
     
   }
   
