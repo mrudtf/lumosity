@@ -5,18 +5,57 @@
 }
 
 body {
-  background: rgb(178, 223, 245);
+  background: #f2f2f2;/*rgb(178, 223, 245);*/
+}
+
+#fullscreen-btn {
+  opacity: .3;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+#fullscreen-btn:hover {
+  opacity: .6;
 }
 
 #game-container {
   background-image: url(../img/bg.png);
-  border: 10px solid rgba(255, 255, 255, 1);
-  border-radius: 3px;
-  box-shadow: 0 0 0 1px #8bb8d2;
+  border: 2px solid #333;
+  border-radius: 2px;
+/*   box-shadow: 0 0 2px 1px #999;/*#8bb8d2;*/
   height: 530px;
   margin: 30px auto;
   position: relative;
   width: 640px;
+}
+
+#instructions-container {
+  position: absolute;
+  z-index: 500;
+}
+
+#instructions-img {
+  position: absolute;
+  z-index: 501;
+}
+
+#instructions-close-btn {
+  background: #777;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 3px 0 0 #555;
+  color: white;
+  display: block;
+  left: 264px;
+  padding: 10px 38px;
+  position: absolute;
+  top: 230px;
+  z-index: 502;
+}
+
+#instructions-close-btn:hover {
+  background: #555;
 }
 
 #menu {
@@ -26,7 +65,7 @@ body {
 
 #menu h1 {
   color: #333;
-  margin-bottom: 20px;
+  margin: 90px 0 10px;
   text-align: center;
 }
 
@@ -37,7 +76,7 @@ body {
 #menu form {
   display: block;
   padding: 0 100px;
-  margin: 20px auto;
+  margin: 50px auto 0;
 }
 
 #menu form label {
@@ -50,7 +89,7 @@ body {
   border-radius: 4px;
   box-shadow: 0 3px 0 0 #BA3A24;
   display: block;
-  left: 175px;
+  left: 181px;
   margin-top: 30px;
   padding: 10px 38px;
   position: relative;
@@ -60,24 +99,13 @@ body {
   background: #BA3A24;
 }
 
-#instructions-btn {
-  background: #999;
-  border-radius: 50%;
-  bottom: 45px;
-  color: white;
-  font-size: 18px;
-  height: 24px;
-  left: 426px;
-  margin: 0 0 0 -12px;
-  padding: 2px;
-  position: absolute;
-  text-align: center;
-  width: 24px;
+#menu form button#instructions-btn {
+  background: #777;
+  box-shadow: 0 3px 0 0 #555;
 }
 
-#instructions-btn:hover {
-  background: #888;
-  text-decoration: none;
+#menu form button#instructions-btn:hover {
+  background: #555;
 }
 
 /* Game */
@@ -94,14 +122,14 @@ body {
 }
 
 #center-fix {
-  left: 268px;
+  left: 280px;
   position: absolute;
-  top: 212px;
+  top: 225px;
 }
 
 #info-bar {
   position: absolute;
-  right: 20px;
+  right: 15px;
   top: 0px;
 }
 
@@ -186,8 +214,7 @@ body {
 
 #progress {
   background: rgba(255, 255, 255, 0.5);
-  display: table;
-  margin: 0 auto;
+  margin: 0 5px;
   padding: 10px;
 }
 
@@ -215,23 +242,33 @@ body {
   width: 10px;
 }
 
+#spacebar-container {
+  background: rgba(255, 255, 255, 0.5);
+  bottom: 0;
+  left: 50%;
+  margin-left: -80px;
+  padding: 12px 0;
+  position: absolute;
+  width: 160px;
+}
+
 #spacebar {
-  background: #ddd;
-  border: 2px solid #aaa;
-  border-radius: 5px;
+  background: rgba(255, 255, 255, .7);
+  border: 2px solid rgba(0, 0, 0, .3);
+  border-radius: 3px;
   bottom: 10px;
   color: #333;
   font-size: 16px;
+  font-weight: bold;
+  margin: 0 auto;
   opacity: .85;
   padding: 5px;
-  position: absolute;
-  right: 10px;
   text-align: center;
   transition: all 50ms;
   width: 120px;
 }
 
-#dialog-container {
+#dialog-container, #message-container {
   background: rgba(0, 0, 0, .4);
   left: 50%;
   margin: 0 0 0 -140px;
@@ -242,7 +279,12 @@ body {
   z-index: 100;
 }
 
-#dialog {
+#message-container {
+  margin: 0 0 0 -190px;
+  width: 340px;
+}
+
+#dialog, #message {
   background: #fff;
   padding: 20px;
 }
@@ -271,4 +313,21 @@ body {
 
 #dialog-right p {
   font-weight: bold;
+}
+
+#message h3, #message span {
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#message h3 {
+  text-align: center;
+}
+
+#message p {
+  color: #333;
+  font-size: 20px;
+  line-height: 26px;
+  margin: 15px 0;
 }

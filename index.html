@@ -25,15 +25,23 @@
 	
 </head>
 <body>
+  <img src="./img/fullscreen.png" alt="" id="fullscreen-btn" />
   <div id="game-container">
+    <div id="instructions-container">
+      <button id="instructions-close-btn">Close</button>
+      <img src="./img/instructions.png" alt="instructions" id="instructions-img" />
+    </div>
     <!-- <canvas id="game" width="640px" height="530px"></canvas> -->
     <div id="menu">
       <h1>Rhythm Game Prototype</h1>
+<!-- STANDARD GAME / CUSTOM GAME RADIO SELECTOR
       <div class="btn-group" data-toggle="buttons-radio">
         <button type="button" class="btn" id="standard-game-btn" data-toggle="button">Standard Game</button>
         <button type="button" class="btn" id="custom-rules-btn" data-toggle="button">Custom Rules</button>
       </div>
+-->
       <form class="form-horizontal" id="game-form">
+<!-- CODE FOR CUSTOM GAME INPUT
         <div id="custom-controls">
           <div class="control-group">
             <label class="control-label" for="custom-rhythms">Use custom rhythms</label>
@@ -73,20 +81,24 @@
             </div>
           </div>
         </div>
+-->
         <div class="control-group">
           <label class="control-label" for="starting-level">Start at level</label>
           <div class="controls">
             <input type="text" class="input-small" id="starting-level" value="1">
           </div>
         </div>
-        <button  id="start-game" >Play</button>
-        <a id="instructions-btn">?</a>
+        <button id="instructions-btn">Instructions</button>
+        <button id="start-game" >Play</button>
       </form>
     </div>
     
-    
     <div id="game">
       <div id="info-bar">
+        <div class="info-tab" id="progress">
+          <span id="progress-listen">LISTEN</span>
+          <span id="progress-play">PLAY</span>
+        </div>
         <span class="info-tab" id="trial-info">TRIAL <span id="trial">1</span> of <span id="num-trials"></span></span>
         <span class="info-tab" id="level-info">LEVEL <span id="level">1</span></span>
         <span class="info-tab" id="score-info">SCORE <span id="score">0</span></span>
@@ -95,13 +107,14 @@
       <img src="./img/center_fix.png" id="center-fix"/>
       <div id="countdown">LISTEN…</div>
       <div id="multiplier"><p>SCORE X1</p></div>
-      <div id="spacebar">spacebar</div>
-      <div id="progress-container">
-        <div id="progress">
-          <span id="progress-listen">LISTEN</span>
-          <span id="progress-play">PLAY</span>
-        </div>
+      <div id="spacebar-container">
+        <div id="spacebar">spacebar</div>
       </div>
+<!--
+      <div id="progress-container">
+        
+      </div>
+-->
       <div id="dialog-container">
         <div id="dialog">
           <div id="dialog-left">
@@ -116,7 +129,12 @@
             <p id="dialog-accuracy"></p>
             <p id="dialog-points"></p>
           </div>
-          
+        </div>
+      </div>
+      <div id="message-container">
+        <div id="message">
+          <h3>Level <span id="next-level"></span></h3>
+          <p></p>
         </div>
       </div>
     </div>
