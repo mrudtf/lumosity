@@ -6,13 +6,17 @@
 
 body {
   background: #f2f2f2;/*rgb(178, 223, 245);*/
+  height: 100%;
+  width: 100%;
 }
 
 #fullscreen-btn {
+  height: 20px;
   opacity: .3;
   position: absolute;
   right: 5px;
   top: 5px;
+  width: 20px;
 }
 
 #fullscreen-btn:hover {
@@ -25,8 +29,9 @@ body {
   border-radius: 2px;
 /*   box-shadow: 0 0 2px 1px #999;/*#8bb8d2;*/
   height: 530px;
-  margin: 30px auto;
+  margin: -267px auto;
   position: relative;
+  top: 50%;
   width: 640px;
 }
 
@@ -75,7 +80,7 @@ body {
 
 #menu form {
   display: block;
-  padding: 0 100px;
+  padding: 0 0 0 150px;
   margin: 50px auto 0;
 }
 
@@ -89,8 +94,6 @@ body {
   border-radius: 4px;
   box-shadow: 0 3px 0 0 #BA3A24;
   display: block;
-  left: 181px;
-  margin-top: 30px;
   padding: 10px 38px;
   position: relative;
 }
@@ -184,7 +187,7 @@ body {
   display: table;
   height: 40px;
   position: absolute;
-  right: 19px;
+  right: 14px;
   top: 30px;
   width: 65px;
 }

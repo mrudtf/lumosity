@@ -173,12 +173,28 @@ $(document).ready(function () {
   
   $('#game').hide();
   $('#instructions-container').hide();
-  $('#custom-controls').hide();
-  $('#standard-game-btn').button('toggle').click( function() {
-    $('#custom-controls').hide();
-  });
-  $('#custom-rules-btn').click( function() {
-    $('#custom-controls').show();
+  var fullscreenOn = false;
+  $('#fullscreen-btn').click( function() {
+    var element = document.body;
+    if(fullscreenOn == false) {
+        if(element.requestFullScreen) {
+        element.requestFullScreen();
+      } else if(element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+      } else if(element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+      }
+      fullscreenOn = true;
+      return;
+    }
+    if(document.cancelFullScreen) {
+      document.cancelFullScreen();
+    } else if(document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if(document.webkitCancelFullScreen) {
+      document.webkitCancelFullScreen();
+    }
+    fullscreenOn = false;
   });
   
   $('#instructions-btn').click( function(e) {
@@ -190,6 +206,10 @@ $(document).ready(function () {
   $('#instructions-close-btn').click( function(e) {
     e.preventDefault();
     $('#instructions-container').fadeOut();
+  });
+  
+  $('#reset-btn').click( function() {
+    resetGame();
   });
 
   $('#start-game').click( function(e) {
@@ -225,10 +245,11 @@ $(document).ready(function () {
     $('#num-loops').html(numLoops);
     level = startingLevel;
     
-    runTrial(numLoops, numTrials, testing);
+    runTrial(numLoops, numTrials);
   }
   
-  function runTrial(numLoops, numTrials, testing) {
+  
+  function runTrial(numLoops, numTrials, lastRhythm) {
     trial++;
     if (trial > numTrials) {
       return;
@@ -240,7 +261,7 @@ $(document).ready(function () {
     $('#multiplier').slideUp();
     $('.progress-mark').remove();
     
-    var rhy = new Rhythm(testing);
+    var rhy = new Rhythm();
     drawCues(rhy);
     drawProgressMarkers(numLoops);
     
@@ -304,16 +325,16 @@ $(document).ready(function () {
           nextLevelMessage();
           setTimeout( function() {
             $('#message-container').fadeOut();
-            runTrial(numLoops, numTrials, testing);
+            runTrial(numLoops, numTrials, rhy);
           }, 4000);
           return;
         }
         if (accuracy < BACK_LEVEL_ACCURACY && level > 1) {
           level--;
-          runTrial(numLoops, numTrials, testing);
+          runTrial(numLoops, numTrials, rhy);
           return;
         }
-        runTrial(numLoops, numTrials, testing);
+        runTrial(numLoops, numTrials, rhy);
       }, 4000);
     }, rhy.measureDuration + rhy.duration * (totalLoops));
   }
@@ -567,6 +588,10 @@ $(document).ready(function () {
         }
       })(markID), i * this.duration);
     }
+  }
+  
+  Rhythm.prototype.playNoScoring = function(tempo) {
+    
   }
   
   Rhythm.prototype.scoreHit = function() {

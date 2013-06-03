@@ -26,6 +26,7 @@
 </head>
 <body>
   <img src="./img/fullscreen.png" alt="" id="fullscreen-btn" />
+<!--   <button class="btn" id="reset-btn">Reset</button> -->
   <div id="game-container">
     <div id="instructions-container">
       <button id="instructions-close-btn">Close</button>
@@ -33,7 +34,7 @@
     </div>
     <!-- <canvas id="game" width="640px" height="530px"></canvas> -->
     <div id="menu">
-      <h1>Rhythm Game Prototype</h1>
+      <h1>Match the Rhythm!</h1>
 <!-- STANDARD GAME / CUSTOM GAME RADIO SELECTOR
       <div class="btn-group" data-toggle="buttons-radio">
         <button type="button" class="btn" id="standard-game-btn" data-toggle="button">Standard Game</button>
@@ -88,8 +89,14 @@
             <input type="text" class="input-small" id="starting-level" value="1">
           </div>
         </div>
-        <button id="instructions-btn">Instructions</button>
-        <button id="start-game" >Play</button>
+        <div class="control-group">
+          <button class="control-label" id="instructions-btn">Instructions</button>
+          <div class="controls">
+            <button id="start-game" >Play</button>
+          </div>
+        </div>
+        
+        
       </form>
     </div>
     
