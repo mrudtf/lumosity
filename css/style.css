@@ -5,7 +5,7 @@
 }
 
 body {
-  background: #f2f2f2;/*rgb(178, 223, 245);*/
+  background: url(../img/debut_light.png);/*#f2f2f2;/*rgb(178, 223, 245);*/
   height: 100%;
   width: 100%;
 }
@@ -25,7 +25,7 @@ body {
 
 #game-container {
   background-image: url(../img/bg.png);
-  border: 2px solid #333;
+  border: 2px solid #fff;
   border-radius: 2px;
 /*   box-shadow: 0 0 2px 1px #999;/*#8bb8d2;*/
   height: 530px;
@@ -64,14 +64,20 @@ body {
 }
 
 #menu {
-  padding: 20px;
+  padding: 100px 100px;
   position: relative;
 }
 
-#menu h1 {
-  color: #333;
-  margin: 90px 0 10px;
+#menu h1, h4 {
+  color: #493E2E;
+  font-weight: normal;
   text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+#menu h4 {
+  margin-top: 20px;
+  padding: 0 40px;
 }
 
 #menu > div {
@@ -80,7 +86,7 @@ body {
 
 #menu form {
   display: block;
-  padding: 0 0 0 150px;
+  padding: 0 0 0 74px;
   margin: 50px auto 0;
 }
 
@@ -251,14 +257,14 @@ body {
   bottom: 0;
   left: 50%;
   margin-left: -80px;
-  padding: 12px 0;
+  padding: 13px 0;
   position: absolute;
   width: 160px;
 }
 
 #spacebar {
   background: rgba(255, 255, 255, .7);
-  border: 2px solid rgba(0, 0, 0, .3);
+  border: 1px solid #333;
   border-radius: 3px;
   bottom: 10px;
   color: #333;

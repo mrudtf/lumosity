@@ -26,63 +26,17 @@
 </head>
 <body>
   <img src="./img/fullscreen.png" alt="" id="fullscreen-btn" />
-<!--   <button class="btn" id="reset-btn">Reset</button> -->
   <div id="game-container">
+  
     <div id="instructions-container">
       <button id="instructions-close-btn">Close</button>
       <img src="./img/instructions.png" alt="instructions" id="instructions-img" />
     </div>
-    <!-- <canvas id="game" width="640px" height="530px"></canvas> -->
+    
     <div id="menu">
       <h1>Match the Rhythm!</h1>
-<!-- STANDARD GAME / CUSTOM GAME RADIO SELECTOR
-      <div class="btn-group" data-toggle="buttons-radio">
-        <button type="button" class="btn" id="standard-game-btn" data-toggle="button">Standard Game</button>
-        <button type="button" class="btn" id="custom-rules-btn" data-toggle="button">Custom Rules</button>
-      </div>
--->
+      <h4>Improve your music skills with a rhythm game that challenges you to listen.</h4>
       <form class="form-horizontal" id="game-form">
-<!-- CODE FOR CUSTOM GAME INPUT
-        <div id="custom-controls">
-          <div class="control-group">
-            <label class="control-label" for="custom-rhythms">Use custom rhythms</label>
-            <div class="controls">
-              <label for="custom-yes" class="radio"><input type="radio" class="" id="custom-yes" name="custom-rhythms" value="no" checked="true" />No</label>
-              <label for="custom-no" class="radio"><input type="radio" class="" id="custom-no" name="custom-rhythms" value="yes"  />Yes</label>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="rhythms-input">Custom rhythms</label>
-            <div class="controls">
-              <textarea id="rhythms-input" rows="3" cols="50">10111010&#x0D;11111111</textarea>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="tempo">Tempo</label>
-            <div class="controls">
-              <input type="text" class="input-small" id="tempo" value="120">
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="rhythm-length">Rhythm Length (in beats)</label>
-            <div class="controls">
-              <input type="text" class="input-small" id="rhythm-length" value="8">
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="num-loops-input"># of loops per trial</label>
-            <div class="controls">
-              <input type="text" class="input-small" id="num-loops-input" value="8"/>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="num-trials-input"># of trials</label>
-            <div class="controls">
-              <input type="text" class="input-small" id="num-trials-input" value="8"/>
-            </div>
-          </div>
-        </div>
--->
         <div class="control-group">
           <label class="control-label" for="starting-level">Start at level</label>
           <div class="controls">
@@ -95,8 +49,6 @@
             <button id="start-game">Play</button>
           </div>
         </div>
-        
-        
       </form>
     </div>
     
@@ -117,11 +69,6 @@
       <div id="spacebar-container">
         <div id="spacebar">spacebar</div>
       </div>
-<!--
-      <div id="progress-container">
-        
-      </div>
--->
       <div id="dialog-container">
         <div id="dialog">
           <div id="dialog-left">
@@ -145,7 +92,6 @@
         </div>
       </div>
     </div>
-    
   </div>
 </body>
 </html>
