@@ -105,6 +105,7 @@ body {
 #menu form button#instructions-btn {
   background: #777;
   box-shadow: 0 3px 0 0 #555;
+  float: left;
 }
 
 #menu form button#instructions-btn:hover {
@@ -156,7 +157,7 @@ body {
 
 #score-info {
   position: relative;
-  width: 120px;
+  width: 100px;
 }
 
 #score-info span {

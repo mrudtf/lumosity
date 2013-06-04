@@ -30,40 +30,55 @@ var MISS_SCORE = 40;
 var NEXT_LEVEL_ACCURACY = 80;
 var BACK_LEVEL_ACCURACY = 30;
 
-var INPUT_DELAY = 30;
+var INPUT_DELAY = 20;
 
 /* 
- * 0) rhythm difficulty
- * 1) # of measures
- * 2) minimum # of cues per measure
- * 3) maximum # of cues per measure
- * 4) intervals per beat
- * 5) cues+marker (0 = on, 1 = fading, 2 = off)
- * 6) message for next level
+ * 0) minimum tempo
+ * 1) maximum tempo
+ * 2) rhythm difficulty
+ * 3) # beats per measure
+ * 4) # of measures
+ * 5) minimum # of cues per measure
+ * 6) maximum # of cues per measure
+ * 7) intervals per beat
+ * 8) cues+marker (0 = on, 1 = fading, 2 = off)
+ * 9) layering last rhythm (0 = off, 1 = on)
+ * 10) message for next level
  */
 var levelMatrix = {
-  1: [1, 1, 2, 3, 1, 0, ""],
-  2: [1, 1, 4, 4, 1, 0, ""],
-  3: [1, 1, 4, 4, 2, 0, "To make things more difficult, we're adding eight notes!"],
-  4: [2, 1, 4, 5, 2, 0, "Congrats making it to level 4! The rhythms begin to get trickier."],
-  5: [1, 1, 3, 4, 1, 1, "The visual cues are going to fade away. Listen carefully!"],
-  6: [1, 1, 4, 5, 2, 1, ""],
-  7: [2, 1, 4, 5, 2, 1, ""],
-  8: [2, 1, 4, 6, 3, 1, "Try your hand at triplets."],
-  9: [3, 1, 4, 6, 3, 1, ""],
- 10: [3, 1, 5, 6, 3, 1, ""],
- 11: [2, 1, 4, 5, 2, 2, "No more visual cues! You'll have to rely on your ears now."],
- 12: [3, 1, 5, 6, 3, 2, ""],
- 13: [3, 1, 5, 6, 4, 2, "Get ready for 16th notes!!"],
- 14: [3, 1, 5, 6, 4, 2, ""],
- 15: [3, 2, 4, 5, 4, 2, "Now there are 2 measures to keep track of. Good luck!"],
- 16: [4, 2, 5, 6, 4, 2, ""],
- 17: [3, 3, 5, 6, 4, 2, "Ahh!!! 3 measures!"],
- 18: [3, 3, 5, 6, 4, 2, ""],
- 19: [3, 4, 5, 6, 4, 2, "4 measures?!?! This is ludicrous!"],
- 20: [3, 5, 5, 6, 4, 2, "Congratulations, no one has ever made it this far."],
- 
+  1: [120, 130, 1, 4, 1, 2, 3, 1, 0, 0, ""],
+  2: [120, 130, 1, 4, 1, 4, 4, 1, 0, 0, ""],
+  3: [120, 140, 1, 4, 1, 4, 4, 2, 0, 0, "To make things more difficult, we're adding eight notes!"],
+  4: [120, 140, 2, 4, 1, 4, 5, 2, 0, 0, "Congrats making it to level 4! The rhythms begin to get trickier."],
+  5: [120, 140, 1, 4, 1, 3, 4, 1, 1, 0, "The visual cues are going to fade away. Listen carefully!"],
+  6: [120, 140, 1, 4, 1, 4, 5, 2, 1, 0, ""],
+  7: [120, 140, 2, 4, 1, 4, 5, 2, 1, 1, "The previous rhythm is going to keep playing. Try not to get confused!"],
+  8: [120, 140, 3, 4, 1, 4, 6, 2, 1, 1, ""],
+  9: [120, 130, 3, 4, 1, 4, 6, 3, 1, 1, "Try your hand at triplets."],
+ 10: [120, 130, 3, 4, 1, 5, 6, 3, 1, 1, ""],
+ 11: [120, 130, 2, 4, 1, 4, 5, 2, 2, 1, "No more visual cues! You'll have to rely on your ears now."],
+ 12: [120, 130, 3, 4, 1, 5, 6, 3, 2, 1, ""],
+ 13: [100, 120, 3, 4, 1, 5, 6, 4, 2, 1, "Get ready for 16th notes!!"],
+ 14: [100, 120, 3, 4, 1, 5, 6, 4, 2, 1, ""],
+ 15: [100, 120, 3, 5, 1, 5, 6, 4, 2, 1, "There are now 5 beats per measure. Listen carefully!"],
+ 16: [100, 120, 4, 6, 1, 6, 7, 4, 2, 1, "6 beats per measure now!"],
+ 17: [100, 120, 3, 4, 2, 4, 6, 4, 2, 1, "Now there are 2 measures of 4 beats each."],
+ 18: [100, 120, 4, 4, 2, 5, 6, 4, 2, 1, ""],
+ 19: [100, 120, 3, 4, 4, 5, 6, 4, 2, 1, "4 measures?!?! This is ludicrous!"],
+ 20: [100, 120, 5, 4, 4, 5, 6, 4, 2, 1, "Congratulations, no one has ever made it this far."],
 }
+
+var minTempoIndex = 0;
+var maxTempoIndex = 1;
+var difficultyIndex = 2;
+var beatsPerMeasureIndex = 3;
+var numMeasuresIndex = 4;
+var minCuesIndex = 5;
+var maxCuesIndex = 6;
+var intervalsPerBeatIndex = 7;
+var fadingIndex = 8;
+var layeringIndex = 9;
+var messageIndex = 10;
 
 var trial = 0;
 var level = 0;
@@ -200,7 +215,6 @@ $(document).ready(function () {
   $('#instructions-btn').click( function(e) {
     e.preventDefault();
     $('#instructions-container').fadeIn();
-    
   });
   
   $('#instructions-close-btn').click( function(e) {
@@ -208,9 +222,12 @@ $(document).ready(function () {
     $('#instructions-container').fadeOut();
   });
   
-  $('#reset-btn').click( function() {
-    resetGame();
-  });
+  $("#starting-level").keypress(function(e){
+    if(event.keyCode == 13){
+      e.preventDefault();
+      $("#start-game").click();
+    }
+});
 
   $('#start-game').click( function(e) {
     e.preventDefault();
@@ -261,7 +278,12 @@ $(document).ready(function () {
     $('#multiplier').slideUp();
     $('.progress-mark').remove();
     
-    var rhy = new Rhythm();
+    if(lastRhythm) {
+      var rhy = new Rhythm(lastRhythm.instrument);
+    }
+    else {
+      var rhy = new Rhythm();
+    }
     drawCues(rhy);
     drawProgressMarkers(numLoops);
     
@@ -273,6 +295,10 @@ $(document).ready(function () {
     setTimeout( function() {
       setMarker(rhy);
       rhy.listen();
+      if(lastRhythm && levelMatrix[level][layeringIndex] == 1) {
+        lastRhythm.reset(rhy.tempo, rhy.beatsPerMeasure, rhy.numMeasures);
+        lastRhythm.listen();
+      }
       two.play();
       setTimeout( function() {
         $('#countdown').html('READY?');
@@ -288,6 +314,10 @@ $(document).ready(function () {
       
       setTimeout( function() {
         rhy.play(numLoops);
+        if(lastRhythm && levelMatrix[level][layeringIndex] == 1) {
+          lastRhythm.play(numLoops);
+          lastRhythm.turnOffScoring();
+        }
         $('#countdown').hide();
         $('#play').show().delay(1000).fadeOut();
         for (var i = 0; i < numLoops; i++) {
@@ -362,7 +392,7 @@ $(document).ready(function () {
   
   function nextLevelMessage() {
     $('#message-container #next-level').html(level);
-    $('#message-container p').html(levelMatrix[level][6]);
+    $('#message-container p').html(levelMatrix[level][messageIndex]);
     $('#message-container').fadeIn();
   }
   
@@ -372,21 +402,21 @@ $(document).ready(function () {
     two.bind('update', function(frameCount) {
       markerGroup.rotation = (new Date().getTime() - rhy.listeningStartTime) % rhy.duration / rhy.duration * 2 * Math.PI;
     });
-    if(levelMatrix[level][5] == 1 && markerIsFading != true) {
+    if(levelMatrix[level][fadingIndex] == 1 && markerIsFading != true) {
       two.bind('update', function(frameCount) {
         markerGroup.opacity = Math.max(markerGroup.opacity - .002, 0);
       });
       markerIsFading = true;
     }
 /*
-      if(levelMatrix[level][5] == 2 && new Date().getTime() > rhy.listeningStartTime + rhy.measureDuration * LISTEN_LOOPS) {
+      if(levelMatrix[level][fadingIndex] == 2 && new Date().getTime() > rhy.listeningStartTime + rhy.measureDuration * LISTEN_LOOPS) {
         markerGroup.opacity = Math.max(markerGroup.opacity - .007, 0);
       }
 */
   }
   
   function drawCues(rhy) {
-    if (levelMatrix[level][5] == 2) {
+    if (levelMatrix[level][fadingIndex] == 2) {
       return;
     }
     for (var beat in rhy.cues) {
@@ -397,7 +427,7 @@ $(document).ready(function () {
       cue.stroke = 'rgba(0, 0, 0, .5)';
       cue.linewidth = markLargeThickness;
       cueGroup.add(cue);
-      if (levelMatrix[level][5] == 1) {
+      if (levelMatrix[level][fadingIndex] == 1) {
         fadeCue(cue);
       }
     }
@@ -462,9 +492,8 @@ $(document).ready(function () {
   
   // Rhythm class functions
   
-  function Rhythm(testing) {
+  function Rhythm(lastInstrument) {
     this.running = false;
-    this.testing = testing;
     this.beats = [];
     this.beats2 = null;
     this.hits = 0;
@@ -472,24 +501,31 @@ $(document).ready(function () {
     this.combo = 0;
     this.comboOn = false;
     this.points = 0;
-    this.beatsPerMeasure = 4;
+    this.beatsPerMeasure = levelMatrix[level][beatsPerMeasureIndex];
     this.length;
     this.measureDuration;
     
-    this.intervalsPerBeat = levelMatrix[level][4];
-    this.numMeasures = levelMatrix[level][1];
-    this.tempo = Math.floor(Math.random() * (MAX_TEMPO - MIN_TEMPO + 1)) + MIN_TEMPO; // randomly selects a tempo between the min and max
+    this.intervalsPerBeat = levelMatrix[level][intervalsPerBeatIndex];
+    this.numMeasures = levelMatrix[level][numMeasuresIndex];
+    var minTempo = levelMatrix[level][minTempoIndex];
+    var maxTempo = levelMatrix[level][maxTempoIndex];
+    this.tempo = Math.floor(Math.random() * (maxTempo - minTempo + 1)) + minTempo; // randomly selects a tempo between the min and max
     this.interval = 60000 / this.tempo / this.intervalsPerBeat; // conversion from bpm to millis per interval
     this.length = this.numMeasures * this.intervalsPerBeat * this.beatsPerMeasure;
     
     this.duration = this.length * this.interval; // millis duration of rhythm
     this.measureDuration = this.duration / this.numMeasures;
-    this.instrument = Math.floor(Math.random() * instruments.length); // randomly sets an instrument
+    this.instrument = Math.floor(Math.random() * instruments.length);
+    if(lastInstrument) {
+      while (this.instrument == lastInstrument) {
+        this.instrument = Math.floor(Math.random() * instruments.length); // randomly sets an instrument
+      }
+    }
     for (var i = 0; i < this.length; i++) {
       this.beats[i] = 0;
     }
     
-    this.numNotes = this.numMeasures * Math.round(Math.random()*(levelMatrix[level][3] - levelMatrix[level][2]) + levelMatrix[level][2]);
+    this.numNotes = this.numMeasures * Math.round(Math.random()*(levelMatrix[level][maxCuesIndex] - levelMatrix[level][minCuesIndex]) + levelMatrix[level][minCuesIndex]);
     
     // custom rhythm assignment
     if (this.testing == true) {
@@ -505,7 +541,7 @@ $(document).ready(function () {
       }
     }
     else {
-      this.generateRhythm(levelMatrix[level][0]);
+      this.generateRhythm(levelMatrix[level][difficultyIndex]);
     }
     
     // Generates the angles for the rhythm's cues
@@ -534,7 +570,17 @@ $(document).ready(function () {
     }
   }
   
-  Rhythm.prototype.listen = function() {
+  Rhythm.prototype.reset = function(tempo, beatsPerMeasure, numMeasures) {
+    this.tempo = tempo;
+    this.beatsPerMeasure = beatsPerMeasure;
+    this.numMeasures = numMeasures;
+    this.interval = 60000 / this.tempo / this.intervalsPerBeat;
+    this.length = this.numMeasures * this.intervalsPerBeat * this.beatsPerMeasure;
+    this.duration = this.length * this.interval;
+    this.measureDuration = this.duration / this.numMeasures;
+  }
+  
+  Rhythm.prototype.listen = function(tempo) {  
     var parent = this;
     this.listeningStartTime = new Date().getTime();
     for (var i = 0; i < LISTEN_LOOPS; i++) {
@@ -590,8 +636,8 @@ $(document).ready(function () {
     }
   }
   
-  Rhythm.prototype.playNoScoring = function(tempo) {
-    
+  Rhythm.prototype.turnOffScoring = function(tempo) {
+    this.running = false;
   }
   
   Rhythm.prototype.scoreHit = function() {
@@ -654,7 +700,7 @@ $(document).ready(function () {
   // Playback functions
   
   function countoff(r) {
-    for (var i=0; i < 4; i++) {
+    for (var i=0; i < r.beatsPerMeasure; i++) {
       playSound('count', r.interval * i * r.intervalsPerBeat);
     }
   }
